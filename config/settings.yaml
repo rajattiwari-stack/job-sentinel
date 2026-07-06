@@ -1,0 +1,67 @@
+# Job Sentinel settings.
+#
+# Role "profiles" make this system evolvable: to hunt data-engineer roles later,
+# add a new profile block and flip `active_profile` (or run both — see main.py).
+
+active_profile: cybersecurity
+
+profiles:
+  cybersecurity:
+    max_experience_years: 6
+    keywords:
+      # product-specific (word-boundary matched — safe for short tokens)
+      - ZIA
+      - ZPA
+      - Zscaler
+      - Avalor
+      - UVM
+      - EDR
+      - XDR
+      - SASE
+      # domain
+      - cyber security
+      - cybersecurity
+      - network security
+      - security architect
+      - security engineer
+      - security analyst
+      - information security
+      - infosec
+      - application security
+      - cloud security
+      - zero trust
+      - SIEM
+      - SOC analyst
+      - threat detection
+      - threat intelligence
+      - incident response
+      - vulnerability management
+      - penetration testing
+
+  # Ready for the future — flip active_profile to use.
+  data_engineering:
+    max_experience_years: 6
+    keywords:
+      - data engineer
+      - ETL
+      - data pipeline
+      - Spark
+      - Airflow
+      - dbt
+      - Kafka
+      - data warehouse
+      - Snowflake
+      - BigQuery
+
+  software_engineering:
+    max_experience_years: 6
+    keywords:
+      - software engineer
+      - backend engineer
+      - full stack
+      - distributed systems
+      - SDE
+
+# Location policy is code-level (India onsite OR remote-open-to-India) — see src/matcher.py.
+report:
+  max_jobs_per_run: 60   # safety valve: never spam more than this in one notification burst

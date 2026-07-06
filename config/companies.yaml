@@ -1,0 +1,236 @@
+# Company registry. Adding a company = adding an entry here. No code changes.
+#
+# ats: greenhouse | lever | ashby | smartrecruiters | workday
+# slug: the ATS board token — find it in the careers-page URL:
+#   greenhouse:      boards.greenhouse.io/<slug>          or job-boards.greenhouse.io/<slug>
+#   lever:           jobs.lever.co/<slug>
+#   ashby:           jobs.ashbyhq.com/<slug>
+#   smartrecruiters: careers.smartrecruiters.com/<slug>   or jobs.smartrecruiters.com/<slug>
+#   workday:         <host>/<path>/...  e.g. https://crowdstrike.wd5.myworkdayjobs.com/crowdstrikecareers
+#
+# Run `python scripts/validate_companies.py` after editing — it pings every
+# endpoint and tells you which slugs are wrong BEFORE you rely on them.
+# Set enabled: false to pause a company without deleting it.
+
+companies:
+  # ---- Security vendors (highest keyword density: ZIA/ZPA/EDR/SASE etc.) ----
+  - name: Zscaler
+    ats: smartrecruiters
+    slug: Zscaler
+  - name: CrowdStrike
+    ats: workday
+    slug: crowdstrike
+    workday_host: crowdstrike.wd5.myworkdayjobs.com
+    workday_path: crowdstrikecareers
+  - name: Palo Alto Networks
+    ats: smartrecruiters
+    slug: PaloAltoNetworks2
+  - name: SentinelOne
+    ats: greenhouse
+    slug: sentinellabs
+  - name: Cloudflare
+    ats: greenhouse
+    slug: cloudflare
+  - name: Rubrik
+    ats: greenhouse
+    slug: rubrik
+  - name: Netskope
+    ats: greenhouse
+    slug: netskope
+  - name: Wiz
+    ats: greenhouse
+    slug: wizinc
+  - name: Snyk
+    ats: greenhouse
+    slug: snyk
+  - name: Tenable
+    ats: workday
+    slug: tenable
+    workday_host: tenable.wd1.myworkdayjobs.com
+    workday_path: tenable
+  - name: Qualys
+    ats: workday
+    slug: qualys
+    workday_host: qualys.wd5.myworkdayjobs.com
+    workday_path: Careers
+  - name: Fortinet
+    ats: workday
+    slug: fortinet
+    workday_host: fortinet.wd1.myworkdayjobs.com
+    workday_path: FortinetCareers
+  - name: Arctic Wolf
+    ats: greenhouse
+    slug: arcticwolfnetworks
+  - name: Abnormal Security
+    ats: greenhouse
+    slug: abnormalsecurity
+  - name: Vectra AI
+    ats: greenhouse
+    slug: vectranetworks
+
+  # ---- Big tech with strong India security orgs ----
+  - name: Okta
+    ats: greenhouse
+    slug: okta
+  - name: Databricks
+    ats: greenhouse
+    slug: databricks
+  - name: Stripe
+    ats: greenhouse
+    slug: stripe
+  - name: Elastic
+    ats: greenhouse
+    slug: elastic
+  - name: Datadog
+    ats: greenhouse
+    slug: datadog
+  - name: MongoDB
+    ats: greenhouse
+    slug: mongodb
+  - name: Atlassian
+    ats: lever
+    slug: atlassian
+  - name: Nutanix
+    ats: lever
+    slug: nutanix
+  - name: HashiCorp
+    ats: greenhouse
+    slug: hashicorp
+  - name: GitLab
+    ats: greenhouse
+    slug: gitlab
+  - name: Twilio
+    ats: greenhouse
+    slug: twilio
+  - name: Coinbase
+    ats: greenhouse
+    slug: coinbase
+  - name: Rippling
+    ats: greenhouse
+    slug: rippling
+  - name: Notion
+    ats: ashby
+    slug: notion
+  - name: Ramp
+    ats: ashby
+    slug: ramp
+  - name: OpenAI
+    ats: ashby
+    slug: openai
+
+  # ---- Big tech with custom ATS (dedicated adapters, no slug needed) ----
+  - name: Amazon
+    ats: amazon
+    slug: amazon
+  - name: Microsoft
+    ats: microsoft
+    slug: microsoft
+
+  # ---- More security vendors ----
+  - name: Proofpoint
+    ats: workday
+    slug: proofpoint
+    workday_host: proofpoint.wd5.myworkdayjobs.com
+    workday_path: ProofpointCareers
+  - name: Trellix
+    ats: workday
+    slug: trellix
+    workday_host: trellix.wd1.myworkdayjobs.com
+    workday_path: External
+  - name: Trend Micro
+    ats: workday
+    slug: trendmicro
+    workday_host: trendmicro.wd3.myworkdayjobs.com
+    workday_path: External
+  - name: F5
+    ats: workday
+    slug: f5
+    workday_host: ffive.wd1.myworkdayjobs.com
+    workday_path: f5jobs
+  - name: Akamai
+    ats: workday
+    slug: akamai
+    workday_host: akamai.wd1.myworkdayjobs.com
+    workday_path: External
+  - name: Splunk (Cisco)
+    ats: workday
+    slug: splunk
+    workday_host: splunk.wd1.myworkdayjobs.com
+    workday_path: Splunk
+  - name: Illumio
+    ats: greenhouse
+    slug: illumio
+  - name: Lacework (Fortinet)
+    ats: greenhouse
+    slug: lacework
+    enabled: false          # verify post-acquisition board status with validator
+  - name: Huntress
+    ats: greenhouse
+    slug: huntress
+  - name: Semgrep
+    ats: greenhouse
+    slug: semgrep
+  - name: Chainguard
+    ats: greenhouse
+    slug: chainguard
+  - name: Tailscale
+    ats: greenhouse
+    slug: tailscale
+  - name: 1Password
+    ats: lever
+    slug: 1password
+  - name: Bitwarden
+    ats: greenhouse
+    slug: bitwarden
+
+  # ---- Enterprise / India-heavy employers ----
+  - name: ServiceNow
+    ats: smartrecruiters
+    slug: ServiceNow
+  - name: Salesforce
+    ats: workday
+    slug: salesforce
+    workday_host: salesforce.wd12.myworkdayjobs.com
+    workday_path: External_Career_Site
+  - name: Adobe
+    ats: workday
+    slug: adobe
+    workday_host: adobe.wd5.myworkdayjobs.com
+    workday_path: external_experienced
+  - name: VMware (Broadcom)
+    ats: workday
+    slug: broadcom
+    workday_host: broadcom.wd1.myworkdayjobs.com
+    workday_path: External_Career
+  - name: Zoom
+    ats: workday
+    slug: zoom
+    workday_host: zoom.wd5.myworkdayjobs.com
+    workday_path: Zoom
+  - name: Freshworks
+    ats: smartrecruiters
+    slug: Freshworks
+  - name: Postman
+    ats: greenhouse
+    slug: postman
+  - name: Razorpay
+    ats: lever
+    slug: razorpay
+  - name: CRED
+    ats: lever
+    slug: cred
+  - name: Groww
+    ats: lever
+    slug: groww
+  - name: Meesho
+    ats: lever
+    slug: meesho
+  - name: Zeta
+    ats: lever
+    slug: zeta
+  - name: Chargebee
+    ats: greenhouse
+    slug: chargebee
+  - name: Browserstack
+    ats: greenhouse
+    slug: browserstack
