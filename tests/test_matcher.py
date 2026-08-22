@@ -156,7 +156,7 @@ def test_takes_smallest_requirement():
 
 def test_unspecified_kept():
     ok, note = experience_check(make(desc="We want passionate security folks."), 6)
-    assert ok and "unspecified" in note
+    assert ok and "not stated" in note
 
 
 def test_garbage_years_ignored():
@@ -206,11 +206,23 @@ def test_junior_title_kept():
     assert m.evaluate(j) is True
 
 
-def test_higher_requirement_is_surfaced_in_note():
+def test_ceiling_rejects_a_senior_role_that_mentions_a_small_number():
     ok, note = experience_check(
-        make(desc="2+ years of security experience required. 8+ years preferred."), 2)
-    assert ok
-    assert "8" in note and "verify" in note
+        make(desc="2+ years of security experience required. 8+ years preferred."),
+        3, reject_above=4)
+    assert not ok
+    assert "8" in note
+
+
+def test_band_is_shown_when_a_range_is_stated():
+    ok, note = experience_check(make(desc="2 to 4 years of experience."), 3, reject_above=4)
+    assert ok and note == "wants 2-4 yrs"
+
+
+def test_stretch_is_labelled_against_candidate_experience():
+    ok, note = experience_check(make(desc="Minimum of 3 years experience."), 3,
+                                reject_above=4, candidate_years=2)
+    assert ok and "you have 2" in note
 
 
 def test_clearly_senior_range_still_dropped():

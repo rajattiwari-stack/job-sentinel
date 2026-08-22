@@ -89,6 +89,8 @@ def load_settings(profile_override: str | None) -> tuple[MatchConfig, int, dict]
         exclude_titles=prof.get("exclude_titles") or [],
         priority_boost=prof.get("priority_boost") or {},
         require_role_match=bool(prof.get("require_role_match", True)),
+        reject_above_years=int(prof.get("reject_above_years", 0)),
+        candidate_years=int(prof.get("candidate_years", 0)),
         max_posting_age_days=int(prof.get("max_posting_age_days", 0)),
         role_weights=build_role_weights(prof.get("role_weights") or []),
     )

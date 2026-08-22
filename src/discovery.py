@@ -148,8 +148,17 @@ _WORKDAY = re.compile(
     r"https?://([a-z0-9-]+\.wd\d+\.myworkdayjobs\.com)/(?:[a-z]{2}-[A-Z]{2}/)?([A-Za-z0-9_-]+)", re.I)
 
 
+_SLUG_ARTEFACTS = {"embed", "job_board", "jobs", "careers", "search", "en-us", "ag", "www"}
+
+
 def probe_careers_page(url: str) -> Optional[dict]:
-    """Read the ATS straight out of a careers page's markup."""
+    """Read the ATS straight out of a careers page's markup.
+
+    A Greenhouse embed URL is boards.greenhouse.io/embed/job_board?for=<slug>,
+    so a pattern that treats the path segment as the slug captures the literal
+    word "embed" whenever the query string is shaped differently. Those boards
+    resolve and return jobs, they are just nobody's board.
+    """
     if not url or "linkedin.com" in url.lower():
         return None
     try:
@@ -163,9 +172,11 @@ def probe_careers_page(url: str) -> Optional[dict]:
             return {"ats": "workday", "slug": m.group(1).split(".")[0],
                     "workday_host": m.group(1).lower(), "workday_path": m.group(2)}
         for ats, pat in _EMBED:
-            hit = pat.search(blob)
-            if hit:
-                return {"ats": ats, "slug": hit.group(1)}
+            for hit in pat.finditer(blob):
+                slug = hit.group(1)
+                if slug.lower() in _SLUG_ARTEFACTS:
+                    continue
+                return {"ats": ats, "slug": slug}
     except Exception:                        # noqa: BLE001 — discovery is best-effort
         return None
     return None

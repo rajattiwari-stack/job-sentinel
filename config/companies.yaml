@@ -29,6 +29,12 @@ companies:
     priority: high
 
   # ---- priority: medium ----
+  - name: "Accenture"
+    ats: workday
+    slug: "accenture"
+    workday_host: accenture.wd103.myworkdayjobs.com
+    workday_path: AccentureCareers
+    priority: medium
   - name: "Airbyte"
     ats: ashby
     slug: "airbyte"
@@ -105,6 +111,12 @@ companies:
     ats: greenhouse
     slug: "brinqa"
     priority: medium
+  - name: "Broadridge"
+    ats: workday
+    slug: "broadridge"
+    workday_host: broadridge.wd5.myworkdayjobs.com
+    workday_path: Careers
+    priority: medium
   - name: "Bugcrowd"
     ats: greenhouse
     slug: "bugcrowd"
@@ -157,6 +169,10 @@ companies:
     ats: greenhouse
     slug: "concentric"
     priority: medium
+  - name: "ConductorOne"
+    ats: ashby
+    slug: "C1"
+    priority: medium
   - name: "Confluent"
     ats: ashby
     slug: "confluent"
@@ -196,6 +212,12 @@ companies:
   - name: "Cyware"
     ats: greenhouse
     slug: "cyware"
+    priority: medium
+  - name: "Darktrace"
+    ats: workday
+    slug: "darktrace"
+    workday_host: darktrace.wd3.myworkdayjobs.com
+    workday_path: DarktaceExternal
     priority: medium
   - name: "Dashlane"
     ats: greenhouse
@@ -241,6 +263,10 @@ companies:
     ats: greenhouse
     slug: "expel"
     priority: medium
+  - name: "Fi Money"
+    ats: lever
+    slug: "epifi"
+    priority: medium
   - name: "Fidelis Cybersecurity"
     ats: smartrecruiters
     slug: "fideliscybersecurity"
@@ -253,6 +279,12 @@ companies:
     ats: ashby
     slug: "filigran"
     priority: medium
+  - name: "Finastra"
+    ats: workday
+    slug: "finastra"
+    workday_host: finastra.wd3.myworkdayjobs.com
+    workday_path: FINC
+    priority: medium
   - name: "Fireblocks"
     ats: greenhouse
     slug: "fireblocks"
@@ -260,6 +292,24 @@ companies:
   - name: "Fivetran"
     ats: greenhouse
     slug: "fivetran"
+    priority: medium
+  - name: "Forcepoint"
+    ats: workday
+    slug: "forcepoint"
+    workday_host: forcepoint.wd1.myworkdayjobs.com
+    workday_path: external-careers
+    priority: medium
+  - name: "Genesys"
+    ats: workday
+    slug: "genesys"
+    workday_host: genesys.wd1.myworkdayjobs.com
+    workday_path: Genesys
+    priority: medium
+  - name: "Genpact"
+    ats: workday
+    slug: "genpact"
+    workday_host: genpact.wd108.myworkdayjobs.com
+    workday_path: External_Careers
     priority: medium
   - name: "Glean"
     ats: smartrecruiters
@@ -329,6 +379,12 @@ companies:
     ats: lever
     slug: "jumpcloud"
     priority: medium
+  - name: "Juniper Networks"
+    ats: workday
+    slug: "hpe"
+    workday_host: hpe.wd5.myworkdayjobs.com
+    workday_path: Jobsathpe
+    priority: medium
   - name: "Justworks"
     ats: greenhouse
     slug: "justworks"
@@ -345,9 +401,21 @@ companies:
     ats: greenhouse
     slug: "knowbe4"
     priority: medium
+  - name: "Kyndryl"
+    ats: workday
+    slug: "kyndryl"
+    workday_host: kyndryl.wd5.myworkdayjobs.com
+    workday_path: KyndrylEarlyCareers
+    priority: medium
   - name: "Leapsome"
     ats: ashby
     slug: "leapsome"
+    priority: medium
+  - name: "Mastercard"
+    ats: workday
+    slug: "mastercard"
+    workday_host: mastercard.wd1.myworkdayjobs.com
+    workday_path: CorporateCareers
     priority: medium
   - name: "Material Security"
     ats: ashby
@@ -401,6 +469,12 @@ companies:
     ats: greenhouse
     slug: "nozominetworks"
     priority: medium
+  - name: "NVIDIA"
+    ats: workday
+    slug: "nvidia"
+    workday_host: nvidia.wd5.myworkdayjobs.com
+    workday_path: NVIDIAExternalCareerSite
+    priority: medium
   - name: "Observe.AI"
     ats: greenhouse
     slug: "observeai"
@@ -416,6 +490,12 @@ companies:
   - name: "OpenZeppelin"
     ats: greenhouse
     slug: "openzeppelin"
+    priority: medium
+  - name: "Optiv"
+    ats: workday
+    slug: "optiv"
+    workday_host: optiv.wd5.myworkdayjobs.com
+    workday_path: Optiv_Careers
     priority: medium
   - name: "Orca Security"
     ats: greenhouse
@@ -473,6 +553,12 @@ companies:
     ats: greenhouse
     slug: "remotecom"
     priority: medium
+  - name: "Rockwell Automation"
+    ats: workday
+    slug: "rockwellautomation"
+    workday_host: rockwellautomation.wd1.myworkdayjobs.com
+    workday_path: External_Rockwell_Automation
+    priority: medium
   - name: "runZero"
     ats: greenhouse
     slug: "runzero"
@@ -488,6 +574,12 @@ companies:
   - name: "SafeBreach"
     ats: greenhouse
     slug: "safebreach"
+    priority: medium
+  - name: "SailPoint"
+    ats: workday
+    slug: "sailpoint"
+    workday_host: sailpoint.wd1.myworkdayjobs.com
+    workday_path: SailPoint
     priority: medium
   - name: "Salt Security"
     ats: greenhouse
@@ -537,6 +629,10 @@ companies:
     ats: lever
     slug: "sonatype"
     priority: medium
+  - name: "Sourcegraph"
+    ats: greenhouse
+    slug: "sourcegraph91"
+    priority: medium
   - name: "Sprocket Security"
     ats: greenhouse
     slug: "sprocketsecurity"
@@ -544,6 +640,12 @@ companies:
   - name: "Star Health Insurance"
     ats: smartrecruiters
     slug: "starhealthinsurance"
+    priority: medium
+  - name: "State Street"
+    ats: workday
+    slug: "statestreet"
+    workday_host: statestreet.wd1.myworkdayjobs.com
+    workday_path: Global
     priority: medium
   - name: "Stellar Cyber"
     ats: ashby
@@ -572,6 +674,16 @@ companies:
   - name: "Tanium"
     ats: greenhouse
     slug: "tanium"
+    priority: medium
+  - name: "Teleport (Gravitational)"
+    ats: ashby
+    slug: "goteleport"
+    priority: medium
+  - name: "Temenos"
+    ats: workday
+    slug: "temenos"
+    workday_host: temenos.wd103.myworkdayjobs.com
+    workday_path: Temenoscareers
     priority: medium
   - name: "Thales"
     ats: smartrecruiters
@@ -645,6 +757,18 @@ companies:
     ats: greenhouse
     slug: "workato"
     priority: medium
+  - name: "Workday"
+    ats: workday
+    slug: "workday"
+    workday_host: workday.wd5.myworkdayjobs.com
+    workday_path: Workday
+    priority: medium
+  - name: "Workiva"
+    ats: workday
+    slug: "workiva"
+    workday_host: workiva.wd503.myworkdayjobs.com
+    workday_path: careers
+    priority: medium
   - name: "WorkOS"
     ats: ashby
     slug: "workos"
@@ -657,6 +781,12 @@ companies:
     ats: ashby
     slug: "zapier"
     priority: medium
+  - name: "Zayo Group"
+    ats: workday
+    slug: "zayo"
+    workday_host: zayo.wd1.myworkdayjobs.com
+    workday_path: Zayo_Careers
+    priority: medium
 
   # ---- priority: low ----
   - name: "AbbVie"
@@ -666,6 +796,22 @@ companies:
   - name: "Adyen"
     ats: greenhouse
     slug: "adyen"
+    priority: low
+  - name: "AT&T"
+    ats: workday
+    slug: "att"
+    workday_host: att.wd1.myworkdayjobs.com
+    workday_path: ATTGeneral
+    priority: low
+  - name: "AuditBoard"
+    ats: ashby
+    slug: "optro"
+    priority: low
+  - name: "Boeing"
+    ats: workday
+    slug: "boeing"
+    workday_host: boeing.wd1.myworkdayjobs.com
+    workday_path: EXTERNAL_CAREERS
     priority: low
   - name: "Brex"
     ats: greenhouse
@@ -718,6 +864,12 @@ companies:
   - name: "ION Group"
     ats: lever
     slug: "ion"
+    priority: low
+  - name: "Johnson & Johnson"
+    ats: workday
+    slug: "jj"
+    workday_host: jj.wd5.myworkdayjobs.com
+    workday_path: JJ
     priority: low
   - name: "Lendingkart"
     ats: smartrecruiters
@@ -805,6 +957,12 @@ companies:
     ats: ashby
     slug: "1password"
     priority: unknown
+  - name: "Abbott India"
+    ats: workday
+    slug: "abbott"
+    workday_host: abbott.wd5.myworkdayjobs.com
+    workday_path: abbottcareers
+    priority: unknown
   - name: "Abnormal Security"
     ats: greenhouse
     slug: "abnormalsecurity"
@@ -846,8 +1004,10 @@ companies:
     slug: "anthropic"
     priority: unknown
   - name: "Arctic Wolf"
-    ats: greenhouse
-    slug: "arcticwolfnetworks"
+    ats: workday
+    slug: "arcticwolf"
+    workday_host: arcticwolf.wd1.myworkdayjobs.com
+    workday_path: External
     priority: unknown
   - name: "AssemblyAI"
     ats: greenhouse
@@ -857,9 +1017,19 @@ companies:
     ats: lever
     slug: "atlassian"
     priority: unknown
+  - name: "Becton Dickinson India"
+    ats: workday
+    slug: "bdx"
+    workday_host: bdx.wd1.myworkdayjobs.com
+    workday_path: EXTERNAL_CAREER_SITE_USA
+    priority: unknown
   - name: "Bitwarden"
     ats: greenhouse
     slug: "bitwarden"
+    priority: unknown
+  - name: "Bosch Global Software Technologies"
+    ats: smartrecruiters
+    slug: "BoschGroup"
     priority: unknown
   - name: "Browserstack"
     ats: greenhouse
@@ -892,6 +1062,12 @@ companies:
   - name: "Coinbase"
     ats: greenhouse
     slug: "coinbase"
+    priority: unknown
+  - name: "Concentrix"
+    ats: workday
+    slug: "cnx"
+    workday_host: cnx.wd1.myworkdayjobs.com
+    workday_path: external_global
     priority: unknown
   - name: "Continental India"
     ats: smartrecruiters
@@ -943,6 +1119,12 @@ companies:
     ats: smartrecruiters
     slug: "endava"
     priority: unknown
+  - name: "Expedia Group India"
+    ats: workday
+    slug: "expedia"
+    workday_host: expedia.wd108.myworkdayjobs.com
+    workday_path: search
+    priority: unknown
   - name: "F5"
     ats: workday
     slug: "ffive"
@@ -959,9 +1141,19 @@ companies:
     workday_host: fortinet.wd1.myworkdayjobs.com
     workday_path: FortinetCareers
     priority: unknown
+  - name: "Fractal AI Research"
+    ats: workday
+    slug: "fractal"
+    workday_host: fractal.wd1.myworkdayjobs.com
+    workday_path: Careers
+    priority: unknown
   - name: "Freshworks"
     ats: smartrecruiters
     slug: "Freshworks"
+    priority: unknown
+  - name: "Front"
+    ats: ashby
+    slug: "frontcareers"
     priority: unknown
   - name: "Gainsight"
     ats: ashby
@@ -1011,6 +1203,12 @@ companies:
     ats: greenhouse
     slug: "jetbrains"
     priority: unknown
+  - name: "KLA India"
+    ats: workday
+    slug: "kla"
+    workday_host: kla.wd1.myworkdayjobs.com
+    workday_path: Search
+    priority: unknown
   - name: "Kong Inc"
     ats: ashby
     slug: "kong"
@@ -1036,6 +1234,10 @@ companies:
     ats: ashby
     slug: "linear"
     priority: unknown
+  - name: "Loft Labs"
+    ats: ashby
+    slug: "vClusterLabs"
+    priority: unknown
   - name: "LogicMonitor"
     ats: greenhouse
     slug: "logicmonitor"
@@ -1051,6 +1253,12 @@ companies:
   - name: "Meesho"
     ats: lever
     slug: "meesho"
+    priority: unknown
+  - name: "Micron Technology India"
+    ats: workday
+    slug: "micron"
+    workday_host: micron.wd1.myworkdayjobs.com
+    workday_path: External
     priority: unknown
   - name: "Microsoft"
     ats: microsoft
@@ -1069,9 +1277,27 @@ companies:
     ats: greenhouse
     slug: "netskope"
     priority: unknown
+  - name: "Nordstrom India"
+    ats: workday
+    slug: "nordstrom"
+    workday_host: nordstrom.wd501.myworkdayjobs.com
+    workday_path: nordstrom_careers
+    priority: unknown
+  - name: "Northern Trust India"
+    ats: workday
+    slug: "ntrs"
+    workday_host: ntrs.wd1.myworkdayjobs.com
+    workday_path: northerntrust
+    priority: unknown
   - name: "Notion"
     ats: ashby
     slug: "notion"
+    priority: unknown
+  - name: "NTT Global Data Centers India"
+    ats: workday
+    slug: "nttglobaldatacenters"
+    workday_host: nttglobaldatacenters.wd501.myworkdayjobs.com
+    workday_path: External
     priority: unknown
   - name: "Nutanix"
     ats: ashby
@@ -1121,9 +1347,15 @@ companies:
     ats: ashby
     slug: "ramp"
     priority: unknown
+  - name: "Rancher (SUSE)"
+    ats: workday
+    slug: "suse"
+    workday_host: suse.wd3.myworkdayjobs.com
+    workday_path: Jobsatsuse
+    priority: unknown
   - name: "Razorpay"
-    ats: lever
-    slug: "razorpay"
+    ats: greenhouse
+    slug: "razorpaysoftwareprivatelimited"
     priority: unknown
   - name: "Rebel Foods"
     ats: smartrecruiters
@@ -1152,6 +1384,12 @@ companies:
   - name: "Runway ML"
     ats: ashby
     slug: "runway-ml"
+    priority: unknown
+  - name: "S&P Global India"
+    ats: workday
+    slug: "spgi"
+    workday_host: spgi.wd5.myworkdayjobs.com
+    workday_path: SPGI_Careers
     priority: unknown
   - name: "Salesforce"
     ats: workday
@@ -1201,6 +1439,12 @@ companies:
     ats: greenhouse
     slug: "stabilityai"
     priority: unknown
+  - name: "STAR India (Disney Star)"
+    ats: workday
+    slug: "jiostar"
+    workday_host: jiostar.wd102.myworkdayjobs.com
+    workday_path: JioStar
+    priority: unknown
   - name: "Stripe"
     ats: greenhouse
     slug: "stripe"
@@ -1214,10 +1458,8 @@ companies:
     slug: "tailscale"
     priority: unknown
   - name: "Tenable"
-    ats: workday
-    slug: "tenable"
-    workday_host: tenable.wd1.myworkdayjobs.com
-    workday_path: tenable
+    ats: greenhouse
+    slug: "tenableinc"
     priority: unknown
   - name: "ThoughtWorks"
     ats: greenhouse

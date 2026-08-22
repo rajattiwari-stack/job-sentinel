@@ -2,7 +2,9 @@ active_profile: cybersecurity
 
 profiles:
   cybersecurity:
+    candidate_years: 2
     max_experience_years: 3
+    reject_above_years: 4
     max_posting_age_days: 120
     require_role_match: true
 
@@ -242,7 +244,9 @@ profiles:
       - Wireshark
 
   data_engineering:
+    candidate_years: 2
     max_experience_years: 3
+    reject_above_years: 4
     max_posting_age_days: 120
     exclude_titles: [senior, sr, staff, principal, lead, manager, director, head, vp, architect]
     keywords:
@@ -258,7 +262,9 @@ profiles:
       - BigQuery
 
   software_engineering:
+    candidate_years: 2
     max_experience_years: 3
+    reject_above_years: 4
     max_posting_age_days: 120
     exclude_titles: [senior, sr, staff, principal, lead, manager, director, head, vp, architect]
     keywords:

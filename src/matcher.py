@@ -100,13 +100,21 @@ _SENIORITY_RED_FLAGS = re.compile(
 )
 
 
-def experience_check(job: Job, max_years: int) -> tuple[bool, str]:
-    """Keep when the smallest stated requirement is within the cap."""
+def experience_check(job: Job, max_years: int, reject_above: int = 0,
+                     candidate_years: int = 0) -> tuple[bool, str]:
+    """Keep a posting only if its stated experience band fits the candidate.
+
+    max_years is the highest opening requirement worth seeing. reject_above
+    discards a posting whose ceiling is far beyond that even when it also
+    mentions a small number, which is how a 5-8 year role sneaks past a
+    lowest-number-wins rule.
+    """
     text = job.description or ""
     mins: list[int] = []
 
     for m in _RANGE.finditer(text):
         mins.append(int(m.group(1)))
+        mins.append(int(m.group(2)))
     for m in _MINIMUM.finditer(text):
         mins.append(int(m.group(1)))
     for m in _PLUS.finditer(text):
@@ -119,17 +127,20 @@ def experience_check(job: Job, max_years: int) -> tuple[bool, str]:
 
     if not mins:
         if _SENIORITY_RED_FLAGS.search(job.title):
-            return True, "unspecified (senior-sounding title — verify)"
-        return True, "unspecified"
+            return True, "experience not stated (senior-sounding title — verify)"
+        return True, "experience not stated"
 
-    required = min(mins)
+    required, highest = min(mins), max(mins)
+
     if required > max_years:
         return False, f"needs {required}+ yrs"
+    if reject_above and highest > reject_above:
+        return False, f"asks up to {highest} yrs"
 
-    higher = sorted({n for n in mins if n > max_years})
-    if higher:
-        return True, f"min {required} yrs (also asks {'/'.join(map(str, higher))} — verify)"
-    return True, f"min {required} yrs"
+    band = f"wants {required}-{highest} yrs" if highest > required else f"wants {required}+ yrs"
+    if candidate_years and required > candidate_years:
+        band += f" (you have {candidate_years})"
+    return True, band
 
 
 _POSTED_PROSE = re.compile(r"(\d+)\+?\s*day", re.IGNORECASE)
@@ -190,6 +201,8 @@ class RoleWeight:
 class MatchConfig:
     keywords: list[str]
     max_experience_years: int = 3
+    reject_above_years: int = 0
+    candidate_years: int = 0
     max_posting_age_days: int = 0
     title_boost_keywords: list[str] = field(default_factory=list)
     exclude_titles: list[str] = field(default_factory=list)
@@ -268,7 +281,9 @@ class Matcher:
         if not ok_loc:
             return False
 
-        ok_exp, note = experience_check(job, self.cfg.max_experience_years)
+        ok_exp, note = experience_check(job, self.cfg.max_experience_years,
+                                        self.cfg.reject_above_years,
+                                        self.cfg.candidate_years)
         job.experience_note = note
         if not ok_exp:
             return False
