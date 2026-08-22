@@ -29,6 +29,10 @@ companies:
     priority: high
 
   # ---- priority: medium ----
+  - name: "Airbyte"
+    ats: ashby
+    slug: "airbyte"
+    priority: medium
   - name: "Airtable"
     ats: greenhouse
     slug: "airtable"
@@ -41,6 +45,10 @@ companies:
     ats: greenhouse
     slug: "anaplan"
     priority: medium
+  - name: "Andela"
+    ats: ashby
+    slug: "andela"
+    priority: medium
   - name: "Apiiro"
     ats: greenhouse
     slug: "apiiro"
@@ -52,6 +60,14 @@ companies:
   - name: "Asana"
     ats: greenhouse
     slug: "asana"
+    priority: medium
+  - name: "Astra Security"
+    ats: ashby
+    slug: "astra"
+    priority: medium
+  - name: "Atlan"
+    ats: ashby
+    slug: "atlan"
     priority: medium
   - name: "Aviatrix"
     ats: greenhouse
@@ -93,6 +109,10 @@ companies:
     ats: greenhouse
     slug: "bugcrowd"
     priority: medium
+  - name: "Bureau.id"
+    ats: ashby
+    slug: "bureau"
+    priority: medium
   - name: "Canonical (Ubuntu)"
     ats: greenhouse
     slug: "canonical"
@@ -125,6 +145,10 @@ companies:
     ats: greenhouse
     slug: "cobaltio"
     priority: medium
+  - name: "Cohere"
+    ats: ashby
+    slug: "cohere"
+    priority: medium
   - name: "Commvault"
     ats: greenhouse
     slug: "commvault"
@@ -132,6 +156,10 @@ companies:
   - name: "Concentric AI"
     ats: greenhouse
     slug: "concentric"
+    priority: medium
+  - name: "Confluent"
+    ats: ashby
+    slug: "confluent"
     priority: medium
   - name: "Corelight"
     ats: greenhouse
@@ -152,6 +180,10 @@ companies:
   - name: "Cybereason"
     ats: greenhouse
     slug: "cybereason"
+    priority: medium
+  - name: "Cyberhaven"
+    ats: ashby
+    slug: "cyberhaven"
     priority: medium
   - name: "Cyderes"
     ats: lever
@@ -177,9 +209,21 @@ companies:
     ats: greenhouse
     slug: "digicert"
     priority: medium
+  - name: "Docker"
+    ats: ashby
+    slug: "docker"
+    priority: medium
+  - name: "Doppler"
+    ats: ashby
+    slug: "doppler"
+    priority: medium
   - name: "Dragos"
     ats: greenhouse
     slug: "dragos"
+    priority: medium
+  - name: "Drata"
+    ats: ashby
+    slug: "drata"
     priority: medium
   - name: "Dropzone AI"
     ats: greenhouse
@@ -188,6 +232,10 @@ companies:
   - name: "Druva"
     ats: greenhouse
     slug: "druva"
+    priority: medium
+  - name: "Elliptic"
+    ats: ashby
+    slug: "elliptic"
     priority: medium
   - name: "Expel"
     ats: greenhouse
@@ -200,6 +248,10 @@ companies:
   - name: "Figma"
     ats: greenhouse
     slug: "figma"
+    priority: medium
+  - name: "Filigran (OpenCTI)"
+    ats: ashby
+    slug: "filigran"
     priority: medium
   - name: "Fireblocks"
     ats: greenhouse
@@ -225,6 +277,10 @@ companies:
     ats: greenhouse
     slug: "gusto"
     priority: medium
+  - name: "HackerOne"
+    ats: ashby
+    slug: "hackerone"
+    priority: medium
   - name: "HiBob"
     ats: smartrecruiters
     slug: "hibob"
@@ -232,6 +288,14 @@ companies:
   - name: "Hightouch"
     ats: greenhouse
     slug: "hightouch"
+    priority: medium
+  - name: "Horizon3.ai"
+    ats: ashby
+    slug: "horizon3ai"
+    priority: medium
+  - name: "Humaans"
+    ats: ashby
+    slug: "humaans"
     priority: medium
   - name: "Hyperproof"
     ats: greenhouse
@@ -281,6 +345,18 @@ companies:
     ats: greenhouse
     slug: "knowbe4"
     priority: medium
+  - name: "Leapsome"
+    ats: ashby
+    slug: "leapsome"
+    priority: medium
+  - name: "Material Security"
+    ats: ashby
+    slug: "materialsecurity"
+    priority: medium
+  - name: "Menlo Security"
+    ats: ashby
+    slug: "menlosecurity"
+    priority: medium
   - name: "Merkle Science"
     ats: lever
     slug: "merklescience"
@@ -288,6 +364,14 @@ companies:
   - name: "MinIO"
     ats: greenhouse
     slug: "minio"
+    priority: medium
+  - name: "Miro"
+    ats: ashby
+    slug: "miro"
+    priority: medium
+  - name: "Monte Carlo Data"
+    ats: ashby
+    slug: "montecarlodata"
     priority: medium
   - name: "Narayana Health"
     ats: smartrecruiters
@@ -297,6 +381,10 @@ companies:
     ats: greenhouse
     slug: "newrelic"
     priority: medium
+  - name: "Nightfall AI"
+    ats: ashby
+    slug: "nightfall-ai"
+    priority: medium
   - name: "Nium"
     ats: lever
     slug: "nium"
@@ -305,6 +393,10 @@ companies:
     ats: smartrecruiters
     slug: "nobroker"
     priority: medium
+  - name: "Nord Security"
+    ats: ashby
+    slug: "nord-security"
+    priority: medium
   - name: "Nozomi Networks"
     ats: greenhouse
     slug: "nozominetworks"
@@ -312,6 +404,10 @@ companies:
   - name: "Observe.AI"
     ats: greenhouse
     slug: "observeai"
+    priority: medium
+  - name: "Oligo Security"
+    ats: ashby
+    slug: "oligo"
     priority: medium
   - name: "Oliver Wyman"
     ats: lever
@@ -325,6 +421,10 @@ companies:
     ats: greenhouse
     slug: "orcasecurity"
     priority: medium
+  - name: "Oyster HR"
+    ats: ashby
+    slug: "oyster"
+    priority: medium
   - name: "PagerDuty"
     ats: greenhouse
     slug: "pagerduty"
@@ -332,6 +432,14 @@ companies:
   - name: "Paytm"
     ats: lever
     slug: "paytm"
+    priority: medium
+  - name: "Perplexity AI"
+    ats: ashby
+    slug: "perplexity"
+    priority: medium
+  - name: "Phoenix Security"
+    ats: ashby
+    slug: "phoenix"
     priority: medium
   - name: "PhonePe"
     ats: greenhouse
@@ -341,6 +449,10 @@ companies:
     ats: greenhouse
     slug: "pingidentity"
     priority: medium
+  - name: "Plaid"
+    ats: ashby
+    slug: "plaid"
+    priority: medium
   - name: "Praetorian"
     ats: greenhouse
     slug: "praetorian"
@@ -348,6 +460,10 @@ companies:
   - name: "Proton"
     ats: greenhouse
     slug: "proton"
+    priority: medium
+  - name: "Radiant Security"
+    ats: ashby
+    slug: "radiant"
     priority: medium
   - name: "Recorded Future"
     ats: greenhouse
@@ -393,13 +509,25 @@ companies:
     ats: lever
     slug: "secureframe"
     priority: medium
+  - name: "Sentra"
+    ats: ashby
+    slug: "sentra"
+    priority: medium
   - name: "SISA Information Security"
     ats: smartrecruiters
     slug: "sisainformationsecurity"
     priority: medium
+  - name: "Skyflow"
+    ats: ashby
+    slug: "skyflow"
+    priority: medium
   - name: "Slice (Fintech)"
     ats: greenhouse
     slug: "slice"
+    priority: medium
+  - name: "Snowflake"
+    ats: ashby
+    slug: "snowflake"
     priority: medium
   - name: "Socket Security"
     ats: greenhouse
@@ -417,9 +545,21 @@ companies:
     ats: smartrecruiters
     slug: "starhealthinsurance"
     priority: medium
+  - name: "Stellar Cyber"
+    ats: ashby
+    slug: "stellar"
+    priority: medium
+  - name: "Strider Technologies"
+    ats: ashby
+    slug: "strider-technologies"
+    priority: medium
   - name: "Sumo Logic"
     ats: greenhouse
     slug: "sumologic"
+    priority: medium
+  - name: "Supabase"
+    ats: ashby
+    slug: "supabase"
     priority: medium
   - name: "Swiggy"
     ats: smartrecruiters
@@ -441,6 +581,10 @@ companies:
     ats: greenhouse
     slug: "thoropass"
     priority: medium
+  - name: "Thought Machine"
+    ats: ashby
+    slug: "thought-machine"
+    priority: medium
   - name: "ThreatLocker"
     ats: greenhouse
     slug: "threatlocker"
@@ -457,6 +601,10 @@ companies:
     ats: greenhouse
     slug: "torq"
     priority: medium
+  - name: "TRM Labs"
+    ats: ashby
+    slug: "trm-labs"
+    priority: medium
   - name: "Turtlemint"
     ats: smartrecruiters
     slug: "turtlemint"
@@ -468,6 +616,10 @@ companies:
   - name: "Upstox"
     ats: smartrecruiters
     slug: "upstox"
+    priority: medium
+  - name: "Vanta"
+    ats: ashby
+    slug: "vanta"
     priority: medium
   - name: "Veeva Systems"
     ats: lever
@@ -493,6 +645,18 @@ companies:
     ats: greenhouse
     slug: "workato"
     priority: medium
+  - name: "WorkOS"
+    ats: ashby
+    slug: "workos"
+    priority: medium
+  - name: "Writer AI"
+    ats: ashby
+    slug: "writer"
+    priority: medium
+  - name: "Zapier"
+    ats: ashby
+    slug: "zapier"
+    priority: medium
 
   # ---- priority: low ----
   - name: "AbbVie"
@@ -515,6 +679,14 @@ companies:
     ats: greenhouse
     slug: "catonetworks"
     priority: low
+  - name: "ClickUp"
+    ats: ashby
+    slug: "clickup"
+    priority: low
+  - name: "Delinea"
+    ats: ashby
+    slug: "delinea"
+    priority: low
   - name: "Descope"
     ats: greenhouse
     slug: "descope"
@@ -534,6 +706,14 @@ companies:
   - name: "Hex Technologies"
     ats: greenhouse
     slug: "hextechnologies"
+    priority: low
+  - name: "Hinge Health"
+    ats: ashby
+    slug: "hinge-health"
+    priority: low
+  - name: "Hoxhunt"
+    ats: ashby
+    slug: "hoxhunt"
     priority: low
   - name: "ION Group"
     ats: lever
@@ -575,6 +755,18 @@ companies:
     ats: greenhouse
     slug: "planetscale"
     priority: low
+  - name: "Render"
+    ats: ashby
+    slug: "render"
+    priority: low
+  - name: "Sarvam AI"
+    ats: ashby
+    slug: "sarvam"
+    priority: low
+  - name: "Spring Health"
+    ats: ashby
+    slug: "spring-health"
+    priority: low
   - name: "Suki AI"
     ats: greenhouse
     slug: "suki"
@@ -611,9 +803,8 @@ companies:
   # ---- priority: unknown ----
   - name: "1Password"
     ats: ashby
-    slug: 1password
+    slug: "1password"
     priority: unknown
-    # auto-healed: was lever/1password
   - name: "Abnormal Security"
     ats: greenhouse
     slug: "abnormalsecurity"
@@ -724,6 +915,10 @@ companies:
     ats: greenhouse
     slug: "datadog"
     priority: unknown
+  - name: "Deepgram"
+    ats: ashby
+    slug: "deepgram"
+    priority: unknown
   - name: "Drift (Salesloft)"
     ats: greenhouse
     slug: "salesloft"
@@ -740,17 +935,24 @@ companies:
     ats: greenhouse
     slug: "elastic"
     priority: unknown
+  - name: "ElevenLabs"
+    ats: ashby
+    slug: "elevenlabs"
+    priority: unknown
   - name: "Endava India"
     ats: smartrecruiters
     slug: "endava"
     priority: unknown
   - name: "F5"
     ats: workday
-    slug: ffive
+    slug: "ffive"
     workday_host: ffive.wd5.myworkdayjobs.com
     workday_path: f5jobs
     priority: unknown
-    # auto-healed: was workday/ffive.wd1
+  - name: "Fireworks AI"
+    ats: ashby
+    slug: "fireworks"
+    priority: unknown
   - name: "Fortinet"
     ats: workday
     slug: "fortinet"
@@ -763,18 +965,16 @@ companies:
     priority: unknown
   - name: "Gainsight"
     ats: ashby
-    slug: gainsight
+    slug: "gainsight"
     priority: unknown
-    # auto-healed: was smartrecruiters/gainsight
   - name: "GitLab"
     ats: greenhouse
     slug: "gitlab"
     priority: unknown
   - name: "Groww"
     ats: greenhouse
-    slug: groww
+    slug: "groww"
     priority: unknown
-    # auto-healed: was lever/groww
   - name: "HashiCorp"
     ats: greenhouse
     slug: "hashicorp"
@@ -793,9 +993,12 @@ companies:
     priority: unknown
   - name: "Illumio"
     ats: ashby
-    slug: illumio
+    slug: "illumio"
     priority: unknown
-    # auto-healed: was greenhouse/illumio
+  - name: "InfluxData"
+    ats: ashby
+    slug: "influxdata"
+    priority: unknown
   - name: "Instahyre"
     ats: smartrecruiters
     slug: "instahyre"
@@ -807,6 +1010,10 @@ companies:
   - name: "JetBrains"
     ats: greenhouse
     slug: "jetbrains"
+    priority: unknown
+  - name: "Kong Inc"
+    ats: ashby
+    slug: "kong"
     priority: unknown
   - name: "Labelbox"
     ats: greenhouse
@@ -824,6 +1031,10 @@ companies:
   - name: "LG Electronics India"
     ats: greenhouse
     slug: "lgelectronics"
+    priority: unknown
+  - name: "Linear"
+    ats: ashby
+    slug: "linear"
     priority: unknown
   - name: "LogicMonitor"
     ats: greenhouse
@@ -863,9 +1074,8 @@ companies:
     priority: unknown
   - name: "Nutanix"
     ats: ashby
-    slug: nutanix
+    slug: "nutanix"
     priority: unknown
-    # auto-healed: was lever/nutanix
   - name: "Okta"
     ats: greenhouse
     slug: "okta"
@@ -881,6 +1091,10 @@ companies:
   - name: "Pendo"
     ats: greenhouse
     slug: "pendo"
+    priority: unknown
+  - name: "Percona"
+    ats: ashby
+    slug: "percona"
     priority: unknown
   - name: "Porter (Locus/Porter)"
     ats: lever
@@ -914,9 +1128,17 @@ companies:
     ats: smartrecruiters
     slug: "rebelfoods"
     priority: unknown
+  - name: "Redis Labs"
+    ats: ashby
+    slug: "redis"
+    priority: unknown
   - name: "Renesas Electronics India"
     ats: smartrecruiters
     slug: "renesaselectronics"
+    priority: unknown
+  - name: "Replit"
+    ats: ashby
+    slug: "replit"
     priority: unknown
   - name: "Rippling"
     ats: greenhouse
@@ -926,6 +1148,10 @@ companies:
     ats: greenhouse
     slug: "rubrik"
     priority: unknown
+  - name: "Runway ML"
+    ats: ashby
+    slug: "runway-ml"
+    priority: unknown
   - name: "Salesforce"
     ats: workday
     slug: "salesforce"
@@ -934,12 +1160,15 @@ companies:
     priority: unknown
   - name: "Semgrep"
     ats: ashby
-    slug: semgrep
+    slug: "semgrep"
     priority: unknown
-    # auto-healed: was greenhouse/semgrep
   - name: "SentinelOne"
     ats: greenhouse
     slug: "sentinellabs"
+    priority: unknown
+  - name: "Sentry"
+    ats: ashby
+    slug: "sentry"
     priority: unknown
   - name: "ServiceNow"
     ats: smartrecruiters
@@ -955,9 +1184,8 @@ companies:
     priority: unknown
   - name: "Snyk"
     ats: ashby
-    slug: snyk
+    slug: "snyk"
     priority: unknown
-    # auto-healed: was greenhouse/snyk
   - name: "Splunk (Cisco)"
     ats: workday
     slug: "splunk"
@@ -1026,6 +1254,10 @@ companies:
     ats: smartrecruiters
     slug: "uber"
     priority: unknown
+  - name: "UiPath India"
+    ats: ashby
+    slug: "uipath"
+    priority: unknown
   - name: "Unacademy"
     ats: smartrecruiters
     slug: "unacademy"
@@ -1039,6 +1271,10 @@ companies:
     slug: "broadcom"
     workday_host: broadcom.wd1.myworkdayjobs.com
     workday_path: External_Career
+    priority: unknown
+  - name: "Vultr"
+    ats: ashby
+    slug: "vultr"
     priority: unknown
   - name: "Western Digital India"
     ats: smartrecruiters

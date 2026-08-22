@@ -75,6 +75,16 @@ _US_STATES = re.compile(
 )
 _GLOBAL_OK = re.compile(r"\b(global|worldwide|anywhere|apac|asia|international)\b", re.IGNORECASE)
 
+# Words that carry no geography. Strip them from a location and whatever is
+# left is a real place — which, for a remote posting that named neither India
+# nor "global", is a place other than India.
+_PLACELESS = re.compile(
+    r"\b(remote|hybrid|on-?site|in-?office|work\s*from\s*home|wfh|flexible|"
+    r"telecommute|distributed|optional|primary|multiple|locations?|office|"
+    r"home|based|any|or|and|the|other|various|open)\b|[\s,;:()/|+—–-]",
+    re.IGNORECASE,
+)
+
 
 def _region_locked(text: str) -> bool:
     return bool(
@@ -99,14 +109,30 @@ def location_ok(job: Job) -> tuple[bool, str]:
     if not is_remote:
         return False, "not india, not remote"
 
-    # Remote — check for region locks in the location string itself.
-    # "Anywhere in the US" names a global-sounding word but is still US-locked,
-    # so an explicit lock beats the _GLOBAL_OK hint rather than tying with it.
+    # Remote — but remote WHERE?
+    #
+    # This used to be a blocklist of known-bad regions, which fails open: any
+    # place not on the list passed. Measured on live Ashby boards, that let
+    # through "Palo Alto", "Seattle", "San Francisco", "Foster City, CA" and
+    # "Helsinki, Finland" — none of which contain a country, a US state name,
+    # or the word "US", and all of which are useless to a candidate in India.
+    # Enumerating every city on earth is not a strategy.
+    #
+    # So it's an allowlist now. A remote posting qualifies only when its
+    # location says India, says global, or says nothing specific at all. A
+    # location that names somewhere *else* is locked somewhere else.
     if _region_locked(loc):
         return False, f"remote but region-locked ({job.location})"
     if _GLOBAL_OK.search(loc):
         return True, "remote (global)"
-    return True, "remote"
+
+    # Only the location field here — `loc` above also carries the title, and a
+    # title always leaves a residue ("Security Engineer"), which would reject
+    # every genuinely-unspecified remote role.
+    residue = _PLACELESS.sub(" ", job.location or "").strip()
+    if residue:
+        return False, f"remote but tied to {job.location}"
+    return True, "remote (unspecified)"
 
 
 # -------------------------------------------------------------- experience ---

@@ -83,6 +83,40 @@ def test_remote_us_state_rejected():
         assert not ok, f"{loc!r} should be region-locked, got {why!r}"
 
 
+def test_remote_tied_to_a_foreign_city_is_rejected():
+    """The blocklist's fatal flaw: it fails OPEN.
+
+    None of these name a country, a US state, or the word "US", so a
+    reject-known-bad-regions rule passed every one of them. All were observed
+    on live Ashby boards flagged remote, and all are useless from India.
+    Enumerating every city on earth is not a strategy — hence the allowlist:
+    India, explicitly global, or nothing specific.
+    """
+    for loc in ("Palo Alto", "Seattle", "San Francisco", "Foster City, CA",
+                "Helsinki, Finland", "London"):
+        j = make(loc=loc)
+        j.remote = True
+        ok, why = location_ok(j)
+        assert not ok, f"{loc!r} should be rejected, got {why!r}"
+
+
+def test_remote_with_no_named_place_is_kept():
+    """Genuinely unspecified remote stays in — ambiguity shouldn't cost a match."""
+    for loc in ("Remote", "", "Remote or Hybrid", "Remote - Multiple Locations"):
+        j = make(loc=loc)
+        j.remote = True
+        ok, why = location_ok(j)
+        assert ok, f"{loc!r} should be kept, got {why!r}"
+
+
+def test_title_does_not_count_as_a_location():
+    """The residue check must read the location field alone — a title always
+    leaves words behind and would reject every unspecified remote role."""
+    j = make(title="Senior Cloud Security Engineer", loc="Remote")
+    j.remote = True
+    assert location_ok(j)[0]
+
+
 def test_multi_location_including_india_kept():
     # A job open in several US states AND India is still a real India job.
     ok, _ = location_ok(make(loc="Remote - Illinois, USA; Remote - India"))

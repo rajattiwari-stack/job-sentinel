@@ -1,6 +1,6 @@
 # Job Sentinel 🛡️
 
-A zero-cost, production-grade job-hunting agent. Runs **4× daily** (10:00 / 14:00 / 18:00 / 22:00 IST) on GitHub Actions, scans the career pages of security & big-tech companies, filters for **cybersecurity roles** (ZIA, ZPA, Zscaler, Avalor, EDR, SASE, network security, …) with **0–2 years** experience located in **India (any mode)** or **remote-open-to-India/worldwide**, and pushes every *new* job — with its direct apply link — to your **Telegram** the moment it appears.
+A zero-cost, production-grade job-hunting agent. Runs **4× daily** (10:00 / 14:00 / 18:00 / 22:00 IST) on GitHub Actions, scans 300+ security & big-tech job boards, filters for **cybersecurity roles** (ZIA, ZPA, Zscaler, Avalor, EDR, SASE, network security, …) with **0–2 years** experience located in **India (any mode)** or **remote-open-to-India/worldwide**, and pushes every *new* job — with its direct apply link — to your **Telegram** the moment it appears.
 
 **Cost: ₹0. Forever.** No servers, no credit card. GitHub Actions is free on public repos, Telegram bots are free.
 
@@ -191,7 +191,7 @@ title is disqualifying, at 5+ it is the target.
 | Duplicate notifications | SHA-256 fingerprint per job (ATS id + title + location) stored in `state/seen_jobs.json`, committed atomically back to the repo |
 | Telegram outage | Jobs are marked "seen" **only after** delivery succeeds → automatic retry next run (at-least-once delivery) |
 | Telegram 4096-char limit | Messages chunked on job boundaries; titles HTML-escaped |
-| "Remote (US only)" traps | Region-lock detection: global/APAC/India remote passes; US/EMEA/LATAM-locked remote is rejected — **including** the common forms that never say "US only" (`Remote - Texas, USA`, `Remote, Ohio`, `Remote (Anywhere in the US)`) |
+| "Remote (US only)" traps | **Allowlist, not blocklist.** A remote posting qualifies only if its location says India, says global, or says nothing specific. Rejecting known-bad regions fails open — `Palo Alto`, `Seattle`, `Foster City, CA`, `Helsinki, Finland` name no country, state, or "US", and all sailed through. Enumerating every city on earth is not a strategy |
 | "8+ years" senior roles | Experience parser reads ranges, "X+", "minimum of X", takes the smallest stated requirement, keeps ≤2 |
 | Senior roles that state no years | Title veto (`exclude_titles`): Senior/Staff/Principal/Lead/Manager/Architect/… are dropped outright. The experience parser only sees numbers a posting bothered to write down; plenty of senior posts write none |
 | A low number hiding in a senior post | Kept (never silently dropped) but the alert is tagged — `min 2 yrs (also asks 8 — verify)` |
@@ -211,7 +211,7 @@ title is disqualifying, at 5+ it is the target.
 
 | Wrong company's board (impostor slug) | Board ownership verified against the ATS — see [Board identity](#board-identity--the-impostor-problem) |
 
-**Tests:** `python -m pytest tests/ -v` — 78 tests covering the riskiest logic: keyword boundaries, location policy, experience parsing, seniority veto, ranking, shard rotation, board identity, digest rate-limiting, and self-healing file rewrites.
+**Tests:** `python -m pytest tests/ -v` — 90 tests covering the riskiest logic: keyword boundaries, location policy, experience parsing, seniority veto, ranking, shard rotation, board identity, digest rate-limiting, and self-healing file rewrites.
 
 ---
 
