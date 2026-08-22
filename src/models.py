@@ -15,6 +15,7 @@ class Company:
     workday_host: Optional[str] = None   # e.g. "crowdstrike.wd5.myworkdayjobs.com"
     workday_path: Optional[str] = None   # e.g. "crowdstrikecareers"
     enabled: bool = True
+    priority: str = "unknown"     # high | medium | low | unknown — ranks alerts
 
 
 @dataclass
@@ -29,6 +30,8 @@ class Job:
     department: str = ""
     remote: bool = False
     source_id: str = ""            # ATS-native job id
+
+    priority: str = "unknown"      # inherited from the Company that yielded it
 
     # Populated by the matcher
     matched_keywords: list[str] = field(default_factory=list)

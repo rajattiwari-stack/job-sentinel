@@ -24,7 +24,8 @@ log = logging.getLogger("ats.smartrecruiters")
 LIST_API = "https://api.smartrecruiters.com/v1/companies/{slug}/postings"
 DETAIL_API = "https://api.smartrecruiters.com/v1/companies/{slug}/postings/{pid}"
 PAGE = 100
-MAX_PAGES = 30  # 3000 postings ceiling — sanity guard
+MAX_PAGES = 30    # 3000 postings ceiling — sanity guard
+MAX_DETAILS = 60  # per-company round-trip budget; see workday.py for the rationale
 
 # Broad pre-filter: security-ish title OR India/remote location.
 _PLAUSIBLE = re.compile(
@@ -46,6 +47,7 @@ def _loc_str(j: dict) -> str:
 
 def fetch(company: Company) -> Iterable[Job]:
     offset = 0
+    details = 0
     for _ in range(MAX_PAGES):
         data = get_json(LIST_API.format(slug=company.slug), params={"limit": PAGE, "offset": offset})
         content = data.get("content", [])
@@ -56,6 +58,11 @@ def fetch(company: Company) -> Iterable[Job]:
             loc = _loc_str(j)
             if not (_PLAUSIBLE.search(title) or _LOC_OK.search(loc)):
                 continue
+            if details >= MAX_DETAILS:
+                log.info("%s: detail budget (%d) reached, stopping early.",
+                         company.name, MAX_DETAILS)
+                return
+            details += 1
             pid = j.get("id", "")
             desc = ""
             try:

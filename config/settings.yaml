@@ -7,7 +7,41 @@ active_profile: cybersecurity
 
 profiles:
   cybersecurity:
-    max_experience_years: 6
+    # Candidate targets EARLY-CAREER roles: 0-2 years.
+    max_experience_years: 2
+
+    # Titles that disqualify outright. At a 0-2 yr target these matter more than
+    # the experience parser: senior postings very often state no year count at
+    # all, so the number-based gate lets them through and only the title betrays
+    # them. Word-boundary matched — "lead" never fires inside "leadership".
+    exclude_titles:
+      - senior
+      - sr
+      - staff
+      - principal
+      - lead
+      - manager
+      - director
+      - head
+      - vp
+      - vice president
+      - architect          # architect roles are 8+ yrs in practice
+      - distinguished
+      - fellow
+      - chief
+      - ciso
+      - expert
+      - iii
+      - iv
+
+    # Company tiers come from the source list's profile_fit and are set by
+    # scripts/discover_ats.py. Boost ranks the alert, it never filters.
+    priority_boost:
+      high: 6
+      medium: 2
+      low: 0
+      unknown: 0
+
     keywords:
       # product-specific (word-boundary matched — safe for short tokens)
       - ZIA
@@ -18,17 +52,22 @@ profiles:
       - EDR
       - XDR
       - SASE
+      - SSE
+      - ZTNA
+      - CASB
+      - DLP
       # domain
       - cyber security
       - cybersecurity
       - network security
-      - security architect
       - security engineer
       - security analyst
+      - security operations
       - information security
       - infosec
       - application security
       - cloud security
+      - product security
       - zero trust
       - SIEM
       - SOC analyst
@@ -37,10 +76,21 @@ profiles:
       - incident response
       - vulnerability management
       - penetration testing
+      - DevSecOps
+      # early-career security titles. Deliberately NOT bare "trainee" /
+      # "fresher" / "graduate engineer": keywords are OR-matched, so a generic
+      # term would admit "Graduate Engineer Trainee - Mechanical" and every
+      # other non-security opening. Seniority is handled by exclude_titles and
+      # max_experience_years, not by loosening the domain filter.
+      - security associate
+      - associate security
+      - security intern
+      - security trainee
 
   # Ready for the future — flip active_profile to use.
   data_engineering:
-    max_experience_years: 6
+    max_experience_years: 2
+    exclude_titles: [senior, sr, staff, principal, lead, manager, director, head, vp, architect]
     keywords:
       - data engineer
       - ETL
@@ -54,7 +104,8 @@ profiles:
       - BigQuery
 
   software_engineering:
-    max_experience_years: 6
+    max_experience_years: 2
+    exclude_titles: [senior, sr, staff, principal, lead, manager, director, head, vp, architect]
     keywords:
       - software engineer
       - backend engineer
@@ -65,3 +116,10 @@ profiles:
 # Location policy is code-level (India onsite OR remote-open-to-India) — see src/matcher.py.
 report:
   max_jobs_per_run: 60   # safety valve: never spam more than this in one notification burst
+
+# With a large company list a single run can exceed the Actions timeout. Sharding
+# splits the roster across consecutive runs: run N scans shard (N mod shards).
+# `shards: 1` disables it entirely and every run scans everything.
+scan:
+  shards: 1
+  max_workers: 12

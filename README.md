@@ -1,6 +1,6 @@
 # Job Sentinel 🛡️
 
-A zero-cost, production-grade job-hunting agent. Runs **4× daily** (10:00 / 14:00 / 18:00 / 22:00 IST) on GitHub Actions, scans the career pages of 30+ security & big-tech companies, filters for **cybersecurity roles** (ZIA, ZPA, Zscaler, Avalor, EDR, network security, security architect, …) with **0–6 years** experience located in **India (any mode)** or **remote-open-to-India/worldwide**, and pushes every *new* job — with its direct apply link — to your **Telegram** the moment it appears.
+A zero-cost, production-grade job-hunting agent. Runs **4× daily** (10:00 / 14:00 / 18:00 / 22:00 IST) on GitHub Actions, scans the career pages of security & big-tech companies, filters for **cybersecurity roles** (ZIA, ZPA, Zscaler, Avalor, EDR, SASE, network security, …) with **0–2 years** experience located in **India (any mode)** or **remote-open-to-India/worldwide**, and pushes every *new* job — with its direct apply link — to your **Telegram** the moment it appears.
 
 **Cost: ₹0. Forever.** No servers, no credit card. GitHub Actions is free on public repos, Telegram bots are free.
 
@@ -21,7 +21,7 @@ src/main.py ── ThreadPool ──► ATS adapters (parallel, isolated per com
         │                      ├─ Amazon      amazon.jobs/search.json     (custom big-tech)
         │                      └─ Microsoft   gcsservices.careers.microsoft.com (custom big-tech)
         ▼
-Matcher: keywords (word-boundary safe) → location policy → 0–6 yrs experience parser
+Matcher: keywords (word-boundary safe) → seniority veto → location policy → 0–2 yrs experience
         ▼
 SeenStore (state/seen_jobs.json, committed back to repo) → only NEW jobs pass
         ▼
@@ -102,8 +102,50 @@ git commit -am "applied to 3 roles" && git push
   - name: SomeCompany
     ats: greenhouse        # find the ATS from their careers URL (see file header)
     slug: somecompany
+    priority: high         # high|medium|low — ranks the alert, never filters
 ```
 Then run `python scripts/validate_companies.py`. That's the whole change.
+
+**Add a hundred companies** — you usually have a list of *names and careers-page
+links*, which is not something a scraper can use. `discover_ats.py` converts it:
+
+```bash
+# 1. resolve names -> real ATS boards (probes 4 JSON APIs, keeps only live hits)
+python scripts/discover_ats.py --input my_companies.json \
+       --out discovered.yaml --unresolved unresolved.csv
+
+# 2. merge into the registry WITHOUT clobbering hand-verified entries
+python scripts/merge_companies.py --curated config/companies.yaml \
+       --discovered discovered.yaml --out config/companies.yaml
+
+# 3. confirm every board actually serves jobs
+python scripts/validate_companies.py --quiet
+```
+
+Expect roughly **1 in 5 names to resolve**. That is not a bug: most companies
+aren't on a public-API ATS at all, and the rest publish only through LinkedIn
+or a bespoke careers page with no stable JSON behind it. `unresolved.csv` lists
+every miss with its reason so nothing disappears quietly.
+
+Two traps the discovery step handles, both of which produce *plausible-looking*
+garbage rather than errors:
+
+- **SmartRecruiters answers HTTP 200 with `totalFound: 0` for any string you
+  put in the URL** — real customer or not. Status code proves nothing there, so
+  only a non-empty board counts as a hit.
+- **Slug collisions.** "Apollo Hospitals" and "Apollo Diagnostics" both guess
+  `apollo`, which on Greenhouse is Apollo GraphQL. When two companies land on
+  one board, at most one is right and there's no way to tell which — so neither
+  is kept.
+
+**Scanning several hundred boards** — a single run may not fit in the Actions
+window. Set `scan.shards` in `config/settings.yaml` to split the roster across
+consecutive runs (4 shards × 4 runs/day = full coverage daily, each run short).
+`shards: 1` scans everything every run.
+
+**Change the experience window** — `max_experience_years` in the active profile.
+If you raise it above ~4, also trim `exclude_titles`: at 0–2 years a "Senior"
+title is disqualifying, at 5+ it is the target.
 
 **Change roles later (data engineer, SWE, …)** — `config/settings.yaml` already contains ready-made `data_engineering` and `software_engineering` profiles. Flip `active_profile`, or run a second profile in the same workflow by adding a step: `python -m src.main --profile data_engineering`.
 
@@ -124,17 +166,24 @@ Then run `python scripts/validate_companies.py`. That's the whole change.
 | Duplicate notifications | SHA-256 fingerprint per job (ATS id + title + location) stored in `state/seen_jobs.json`, committed atomically back to the repo |
 | Telegram outage | Jobs are marked "seen" **only after** delivery succeeds → automatic retry next run (at-least-once delivery) |
 | Telegram 4096-char limit | Messages chunked on job boundaries; titles HTML-escaped |
-| "Remote (US only)" traps | Region-lock detection: global/APAC/India remote passes, US/EMEA/LATAM-locked remote is rejected |
-| "8+ years" senior roles | Experience parser reads ranges, "X+", "minimum of X", takes the smallest stated requirement, keeps ≤6 |
-| Unstated experience | Kept (never silently dropped), tagged `unspecified`; senior-sounding titles flagged for your review |
+| "Remote (US only)" traps | Region-lock detection: global/APAC/India remote passes; US/EMEA/LATAM-locked remote is rejected — **including** the common forms that never say "US only" (`Remote - Texas, USA`, `Remote, Ohio`, `Remote (Anywhere in the US)`) |
+| "8+ years" senior roles | Experience parser reads ranges, "X+", "minimum of X", takes the smallest stated requirement, keeps ≤2 |
+| Senior roles that state no years | Title veto (`exclude_titles`): Senior/Staff/Principal/Lead/Manager/Architect/… are dropped outright. The experience parser only sees numbers a posting bothered to write down; plenty of senior posts write none |
+| A low number hiding in a senior post | Kept (never silently dropped) but the alert is tagged — `min 2 yrs (also asks 8 — verify)` |
+| Unstated experience | Kept, tagged `unspecified`; senior-sounding titles flagged for your review |
 | False keyword hits | Word-boundary regex — `EDR` never matches inside "redraw", `ZIA` never inside other words |
+| **Security-vendor boilerplate** | The keyword must hit the **title or department**, never the description alone. Every Zscaler posting — Procurement, Employee Relations, Account Executive — carries an "About us" blurb naming zero trust / cloud security / SASE, so a description-anywhere match scored a procurement job exactly like a security role. Description hits still *rank* a job; they can't *qualify* one. Relax with `require_role_match: false` |
 | Runaway pagination | Hard page caps on SmartRecruiters/Workday |
+| One employer eating the whole run | Per-company detail-fetch budgets (Workday 40, SmartRecruiters 60), India/remote postings spent first |
+| Roster outgrowing the run window | `scan.shards` in settings.yaml splits companies across consecutive runs, sliced by a stable name hash so edits don't reshuffle coverage |
+| Politeness under concurrency | Per-host delay reserves its slot under a lock — an unlocked read-check-sleep silently stops delaying at exactly the concurrency where it matters |
 | Concurrent runs racing on state | Actions `concurrency` group + rebase-before-push |
 | Notification floods | 60 jobs/run cap; overflow rolls to the next run |
 | State file growing forever | 90-day pruning on every save |
 | Total systemic failure | Non-zero exit (→ red ❌ + GitHub email) only if >50% of companies fail |
+| **A board that returns 200 with zero jobs** | The silent killer — nothing throws, the log says "0 postings", and the company is dead for months. `validate_companies.py` reports empty boards as failures, not as OK |
 
-**Tests:** `python -m pytest tests/ -v` — 17 tests covering the riskiest logic (keyword boundaries, location policy, experience parsing).
+**Tests:** `python -m pytest tests/ -v` — 32 tests covering the riskiest logic (keyword boundaries, location policy, experience parsing, seniority veto, ranking).
 
 ---
 

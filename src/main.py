@@ -14,9 +14,11 @@ Production properties:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import logging
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
 from pathlib import Path
 
 import yaml
@@ -49,31 +51,63 @@ def load_companies() -> list[Company]:
             name=c["name"], ats=c["ats"], slug=c["slug"],
             workday_host=c.get("workday_host"), workday_path=c.get("workday_path"),
             enabled=c.get("enabled", True),
+            priority=c.get("priority", "unknown"),
         )
         if comp.enabled:
             out.append(comp)
     return out
 
 
-def load_settings(profile_override: str | None) -> tuple[MatchConfig, int]:
+def select_shard(companies: list[Company], shards: int, index: int) -> list[Company]:
+    """Split the roster so one run scans one slice of it.
+
+    A few dozen companies fit comfortably in a single run; several hundred do
+    not, and a run killed by the Actions timeout delivers nothing at all.
+    Slicing by a stable hash (not list position) keeps a company in the same
+    shard as the roster grows, so edits to companies.yaml don't reshuffle
+    everything and cause duplicate-looking gaps in coverage.
+    """
+    if shards <= 1:
+        return companies
+    picked = [
+        c for c in companies
+        if int(hashlib.sha256(c.name.encode("utf-8")).hexdigest(), 16) % shards == index
+    ]
+    log.info("Shard %d/%d — scanning %d of %d companies this run.",
+             index + 1, shards, len(picked), len(companies))
+    return picked
+
+
+def load_settings(profile_override: str | None) -> tuple[MatchConfig, int, dict]:
     raw = yaml.safe_load((ROOT / "config" / "settings.yaml").read_text("utf-8"))
     profile_name = profile_override or raw["active_profile"]
     prof = raw["profiles"][profile_name]
     cfg = MatchConfig(
         keywords=prof["keywords"],
         max_experience_years=int(prof.get("max_experience_years", 6)),
+        exclude_titles=prof.get("exclude_titles") or [],
+        priority_boost=prof.get("priority_boost") or {},
+        require_role_match=bool(prof.get("require_role_match", True)),
     )
     cap = int((raw.get("report") or {}).get("max_jobs_per_run", 60))
-    log.info("Profile: %s | %d keywords | ≤%d yrs experience",
-             profile_name, len(cfg.keywords), cfg.max_experience_years)
-    return cfg, cap
+    scan = raw.get("scan") or {}
+    log.info("Profile: %s | %d keywords | ≤%d yrs experience | %d excluded titles",
+             profile_name, len(cfg.keywords), cfg.max_experience_years,
+             len(cfg.exclude_titles))
+    return cfg, cap, scan
 
 
 def scan_company(company: Company, matcher: Matcher) -> tuple[str, list[Job], str]:
     """Returns (company, matched_jobs, error). Never raises."""
     try:
         jobs = fetch_jobs(company)
-        matched = [j for j in jobs if j.title and j.url and matcher.evaluate(j)]
+        matched = []
+        for j in jobs:
+            if not (j.title and j.url):
+                continue
+            j.priority = company.priority      # company tier ranks the alert
+            if matcher.evaluate(j):
+                matched.append(j)
         log.info("%-22s %4d postings → %d matches", company.name, len(jobs), len(matched))
         return company.name, matched, ""
     except Exception as e:  # noqa: BLE001 — isolation by design
@@ -85,16 +119,29 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true", help="Print matches, no notify, no state write")
     ap.add_argument("--profile", default=None, help="Override active_profile from settings.yaml")
+    ap.add_argument("--shard", type=int, default=None,
+                    help="Which shard to scan (0-based). Default: derived from the clock.")
+    ap.add_argument("--limit", type=int, default=0, help="Scan only the first N companies (debugging)")
     args = ap.parse_args()
 
     companies = load_companies()
-    match_cfg, cap = load_settings(args.profile)
+    match_cfg, cap, scan_cfg = load_settings(args.profile)
+
+    shards = max(1, int(scan_cfg.get("shards", 1)))
+    # Runs fire at 4 fixed hours; that hour picks the shard, so consecutive runs
+    # walk the whole roster instead of re-scanning one slice forever.
+    shard_index = args.shard if args.shard is not None else (datetime.now().hour // (24 // min(shards, 24))) % shards
+    companies = select_shard(companies, shards, shard_index)
+    if args.limit:
+        companies = companies[: args.limit]
+
     matcher = Matcher(match_cfg)
     store = SeenStore(STATE_FILE)
+    workers = max(1, int(scan_cfg.get("max_workers", MAX_WORKERS)))
 
     all_matches: list[Job] = []
     failures: dict[str, str] = {}
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+    with ThreadPoolExecutor(max_workers=workers) as pool:
         futs = [pool.submit(scan_company, c, matcher) for c in companies]
         for fut in as_completed(futs):
             name, matched, err = fut.result()
@@ -131,7 +178,6 @@ def main() -> int:
     if new_jobs:
         delivered = notify(new_jobs)          # instant text alerts with links
         # Compiled Excel of THIS run's jobs → sent as a file into Telegram
-        from datetime import datetime
         from .notifier import send_telegram_excel
         from .tracker import build_run_workbook
         stamp = datetime.now().strftime("%Y-%m-%d_%H%M")

@@ -31,7 +31,18 @@ log = logging.getLogger("ats.workday")
 
 LIMIT = 20
 MAX_PAGES_PER_TERM = 15   # 300 results per search term — plenty
-SEARCH_TERMS = ["security", "network security", "EDR", "SOC", "cyber"]
+
+# Workday's searchText is substring-ish, so "security" alone already returns
+# "network security", "security operations", "cloud security", ... The extra
+# terms were nearly pure overlap while multiplying the request count by 5, and
+# this adapter is the slowest one in the run by a wide margin.
+SEARCH_TERMS = ["security", "cyber"]
+
+# Hard ceiling on per-job detail fetches for ONE company. Each detail is a
+# separate round trip; an enterprise board with hundreds of security-ish titles
+# could otherwise spend the entire run budget on a single employer and starve
+# every company after it. Titles are ranked so the budget buys the best ones.
+MAX_DETAILS = 40
 
 _PLAUSIBLE = re.compile(
     r"secur|cyber|network|soc\b|siem|edr|threat|vulnerab|firewall|sase|"
@@ -49,11 +60,20 @@ def _endpoint(company: Company) -> tuple[str, str, str]:
     return host, tenant, path
 
 
+_INDIA_LOC = re.compile(
+    r"india|bengaluru|bangalore|hyderabad|pune|mumbai|chennai|gurugram|gurgaon|"
+    r"noida|delhi|kolkata|remote",
+    re.IGNORECASE,
+)
+
+
 def fetch(company: Company) -> Iterable[Job]:
     host, tenant, path = _endpoint(company)
     search_url = f"https://{host}/wday/cxs/{tenant}/{path}/jobs"
     seen: set[str] = set()
+    candidates: list[dict] = []
 
+    # Pass 1 — cheap: page the search endpoint and collect plausible titles.
     for term in SEARCH_TERMS:
         offset = 0
         for _ in range(MAX_PAGES_PER_TERM):
@@ -69,36 +89,49 @@ def fetch(company: Company) -> Iterable[Job]:
                 break
             for p in postings:
                 ext = p.get("externalPath", "")
-                jid = ext or p.get("bulletFields", [""])[0]
+                jid = ext or (p.get("bulletFields") or [""])[0]
                 if not jid or jid in seen:
                     continue
                 seen.add(jid)
                 title = (p.get("title") or "").strip()
                 if not _PLAUSIBLE.search(title):
                     continue
-                loc = p.get("locationsText", "") or ""
-                desc, url = "", f"https://{host}/{path}{ext}"
-                try:
-                    detail = get_json(f"https://{host}/wday/cxs/{tenant}/{path}{ext}")
-                    info = detail.get("jobPostingInfo") or {}
-                    desc = info.get("jobDescription", "") or ""
-                    loc = info.get("location", loc) or loc
-                    extra = info.get("additionalLocations") or []
-                    if extra:
-                        loc = ", ".join([loc, *extra])
-                    url = info.get("externalUrl") or url
-                except HttpError as e:
-                    log.warning("%s: workday detail failed %s: %s", company.name, ext, e)
-                yield Job(
-                    company=company.name,
-                    title=title,
-                    url=url,
-                    location=loc,
-                    description=desc,
-                    posted_at=p.get("postedOn", ""),
-                    remote="remote" in loc.lower(),
-                    source_id=jid,
-                )
+                candidates.append({"ext": ext, "jid": jid, "title": title,
+                                   "loc": p.get("locationsText", "") or "",
+                                   "posted": p.get("postedOn", "")})
             offset += LIMIT
             if offset >= int(data.get("total", 0)):
                 break
+
+    # Pass 2 — expensive: spend the detail budget on India/remote first, since
+    # a US-only posting will be discarded by the matcher anyway.
+    candidates.sort(key=lambda c: 0 if _INDIA_LOC.search(c["loc"]) else 1)
+    if len(candidates) > MAX_DETAILS:
+        log.info("%s: %d security titles, fetching detail for the %d most relevant.",
+                 company.name, len(candidates), MAX_DETAILS)
+        candidates = candidates[:MAX_DETAILS]
+
+    for c in candidates:
+        ext, loc = c["ext"], c["loc"]
+        desc, url = "", f"https://{host}/{path}{ext}"
+        try:
+            detail = get_json(f"https://{host}/wday/cxs/{tenant}/{path}{ext}")
+            info = detail.get("jobPostingInfo") or {}
+            desc = info.get("jobDescription", "") or ""
+            loc = info.get("location", loc) or loc
+            extra = info.get("additionalLocations") or []
+            if extra:
+                loc = ", ".join([loc, *extra])
+            url = info.get("externalUrl") or url
+        except HttpError as e:
+            log.warning("%s: workday detail failed %s: %s", company.name, ext, e)
+        yield Job(
+            company=company.name,
+            title=c["title"],
+            url=url,
+            location=loc,
+            description=desc,
+            posted_at=c["posted"],
+            remote="remote" in loc.lower(),
+            source_id=c["jid"],
+        )

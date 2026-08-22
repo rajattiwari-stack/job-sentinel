@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import logging
 import random
+import threading
 import time
 from typing import Any, Optional
 from urllib.parse import urlparse
@@ -30,6 +31,7 @@ _UA = (
 )
 
 _last_hit: dict[str, float] = {}
+_hit_lock = threading.Lock()
 
 
 class HttpError(Exception):
@@ -37,12 +39,22 @@ class HttpError(Exception):
 
 
 def _politeness_wait(url: str) -> None:
+    """Space out requests to one host, correctly under concurrency.
+
+    Read-check-sleep-write without a lock lets every worker read the same
+    "last hit" timestamp and then fire simultaneously, so the delay silently
+    stops applying at exactly the concurrency where politeness starts to
+    matter. Reserving the next slot inside the lock — and sleeping outside it,
+    so other hosts aren't blocked — makes the spacing hold.
+    """
     host = urlparse(url).netloc
-    last = _last_hit.get(host, 0.0)
-    wait = PER_HOST_DELAY - (time.monotonic() - last)
-    if wait > 0:
-        time.sleep(wait)
-    _last_hit[host] = time.monotonic()
+    with _hit_lock:
+        now = time.monotonic()
+        earliest = max(now, _last_hit.get(host, 0.0) + PER_HOST_DELAY)
+        _last_hit[host] = earliest
+    delay = earliest - now
+    if delay > 0:
+        time.sleep(delay)
 
 
 def request_json(

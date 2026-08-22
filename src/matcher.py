@@ -45,14 +45,41 @@ _INDIA_HINTS = re.compile(
 _REMOTE_HINTS = re.compile(r"\b(remote|work\s*from\s*home|wfh|anywhere|distributed|telecommute)\b", re.IGNORECASE)
 
 # Remote but locked to a region that is NOT India / NOT global.
+#
+# Two patterns, deliberately: the multi-word names are safe case-insensitively,
+# but bare tokens ("US", "UK", "EU") must stay case-SENSITIVE or the word "us"
+# in ordinary prose ("join us in Bengaluru") would region-lock a valid job.
 _REGION_LOCK = re.compile(
     r"\b(us(a)?\s*(only|based)|united\s+states|u\.s\.|canada|north\s+america|"
-    r"emea|europe(an)?|uk\b|united\s+kingdom|germany|france|poland|ireland|netherlands|"
+    r"emea|europe(an)?|united\s+kingdom|germany|france|poland|ireland|netherlands|"
     r"latam|latin\s+america|brazil|mexico|australia|new\s+zealand|japan(?!.*india)|"
     r"singapore(?!.*india)|israel|middle\s+east(?!.*india))\b",
     re.IGNORECASE,
 )
+_REGION_LOCK_TOKENS = re.compile(r"\b(USA?|UK|EU|EMEA|LATAM|APJ)\b")   # case-sensitive on purpose
+
+# US state names: "Remote - Texas" / "Remote, Ohio" is US-locked even though the
+# posting never says "US". Without this the most common phrasing of a US-only
+# remote role sails straight through to an India-based candidate.
+_US_STATES = re.compile(
+    r"\b(alabama|alaska|arizona|arkansas|california|colorado|connecticut|delaware|"
+    r"florida|georgia|hawaii|idaho|illinois|indiana|iowa|kansas|kentucky|louisiana|"
+    r"maine|maryland|massachusetts|michigan|minnesota|mississippi|missouri|montana|"
+    r"nebraska|nevada|new\s+hampshire|new\s+jersey|new\s+mexico|new\s+york|"
+    r"north\s+carolina|north\s+dakota|ohio|oklahoma|oregon|pennsylvania|rhode\s+island|"
+    r"south\s+carolina|south\s+dakota|tennessee|texas|utah|vermont|virginia|"
+    r"washington|west\s+virginia|wisconsin|wyoming|district\s+of\s+columbia)\b",
+    re.IGNORECASE,
+)
 _GLOBAL_OK = re.compile(r"\b(global|worldwide|anywhere|apac|asia|international)\b", re.IGNORECASE)
+
+
+def _region_locked(text: str) -> bool:
+    return bool(
+        _REGION_LOCK.search(text)
+        or _REGION_LOCK_TOKENS.search(text)
+        or _US_STATES.search(text)
+    )
 
 
 def location_ok(job: Job) -> tuple[bool, str]:
@@ -71,8 +98,12 @@ def location_ok(job: Job) -> tuple[bool, str]:
         return False, "not india, not remote"
 
     # Remote — check for region locks in the location string itself.
-    if _REGION_LOCK.search(loc) and not _INDIA_HINTS.search(loc) and not _GLOBAL_OK.search(loc):
+    # "Anywhere in the US" names a global-sounding word but is still US-locked,
+    # so an explicit lock beats the _GLOBAL_OK hint rather than tying with it.
+    if _region_locked(loc):
         return False, f"remote but region-locked ({job.location})"
+    if _GLOBAL_OK.search(loc):
+        return True, "remote (global)"
     return True, "remote"
 
 
@@ -96,6 +127,11 @@ def experience_check(job: Job, max_years: int) -> tuple[bool, str]:
     Strategy: collect every candidate 'minimum years' the text asks for and use the
     smallest plausible requirement (postings often list one core requirement plus
     larger 'nice to have' numbers). Unparseable => keep, tagged unspecified.
+
+    At a low cap (0-2 yrs) "take the smallest" gets leaky: a 5-7 yr role that
+    mentions "2 years of scripting" would sneak through. We still keep it —
+    silently dropping a real match is the worse error — but the note carries
+    the higher numbers so a glance at the alert is enough to judge.
     """
     text = job.description or ""
     mins: list[int] = []
@@ -118,9 +154,13 @@ def experience_check(job: Job, max_years: int) -> tuple[bool, str]:
         return True, "unspecified"
 
     required = min(mins)
-    if required <= max_years:
-        return True, f"min {required} yrs"
-    return False, f"needs {required}+ yrs"
+    if required > max_years:
+        return False, f"needs {required}+ yrs"
+
+    higher = sorted({n for n in mins if n > max_years})
+    if higher:
+        return True, f"min {required} yrs (also asks {'/'.join(map(str, higher))} — verify)"
+    return True, f"min {required} yrs"
 
 
 # ------------------------------------------------------------------ engine ---
@@ -130,6 +170,22 @@ class MatchConfig:
     keywords: list[str]
     max_experience_years: int = 6
     title_boost_keywords: list[str] = field(default_factory=list)
+    exclude_titles: list[str] = field(default_factory=list)
+    priority_boost: dict[str, int] = field(default_factory=dict)
+    require_role_match: bool = True   # keyword must hit the title/department
+
+
+def build_exclude_pattern(words: list[str]) -> re.Pattern | None:
+    """Titles that disqualify a job outright, regardless of what the body says.
+
+    Experience parsing only sees numbers a posting bothered to state. Plenty of
+    senior roles state none — for a 0-2 yr candidate the title is the more
+    reliable signal, so it gets to veto.
+    """
+    cleaned = [re.escape(w.strip()).replace(r"\ ", r"[\s\-]+") for w in words if w.strip()]
+    if not cleaned:
+        return None
+    return re.compile(rf"(?<![A-Za-z0-9])(?:{'|'.join(cleaned)})(?![A-Za-z0-9])", re.IGNORECASE)
 
 
 def clean_text(raw: str) -> str:
@@ -145,6 +201,7 @@ class Matcher:
     def __init__(self, cfg: MatchConfig):
         self.cfg = cfg
         self.patterns = build_keyword_patterns(cfg.keywords)
+        self.exclude = build_exclude_pattern(cfg.exclude_titles)
 
     def evaluate(self, job: Job) -> bool:
         """Mutates job (matched_keywords, score, experience_note). Returns keep/drop."""
@@ -152,16 +209,40 @@ class Matcher:
         haystack_title = job.title or ""
         haystack_all = f"{haystack_title}\n{job.department}\n{job.description}"
 
-        hits, score = [], 0
-        for kw, pat in self.patterns:
-            if pat.search(haystack_all):
-                hits.append(kw)
-                score += 3 if pat.search(haystack_title) else 1  # title hits matter more
-        if not hits:
+        # Cheapest, most decisive gate first — skip the regex sweep on a title
+        # that can never qualify.
+        if self.exclude and self.exclude.search(haystack_title):
             return False
-        job.matched_keywords = hits
 
-        ok_loc, _ = location_ok(job)
+        # WHERE a keyword matches decides whether the job qualifies at all.
+        #
+        # Security vendors put "zero trust / cloud security / SASE" in the
+        # About-us boilerplate of EVERY posting, so a description match says
+        # nothing about the role. Measured on Zscaler's live board: every one
+        # of its India openings hit 3-4 keywords in the description and zero in
+        # the title — "Deputy Manager, Procurement" and "Employee Relations
+        # Manager" scored exactly like a security engineering role.
+        #
+        # So the title or department has to carry the match. Description hits
+        # still rank a job, they just can't qualify one on their own.
+        title_hits, dept_hits, desc_hits = [], [], []
+        for kw, pat in self.patterns:
+            if pat.search(haystack_title):
+                title_hits.append(kw)
+            elif pat.search(job.department or ""):
+                dept_hits.append(kw)
+            elif pat.search(job.description or ""):
+                desc_hits.append(kw)
+
+        if self.cfg.require_role_match and not (title_hits or dept_hits):
+            return False
+        if not (title_hits or dept_hits or desc_hits):
+            return False
+
+        job.matched_keywords = title_hits + dept_hits + desc_hits
+        score = 3 * len(title_hits) + 2 * len(dept_hits) + len(desc_hits)
+
+        ok_loc, loc_reason = location_ok(job)
         if not ok_loc:
             return False
 
@@ -172,5 +253,8 @@ class Matcher:
 
         if _SENIORITY_RED_FLAGS.search(haystack_title):
             score -= 2
+        if loc_reason == "india":
+            score += 2          # on-the-ground India beats a maybe-remote listing
+        score += self.cfg.priority_boost.get(job.priority, 0)
         job.score = score
         return True

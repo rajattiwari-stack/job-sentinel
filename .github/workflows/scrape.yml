@@ -22,7 +22,10 @@ concurrency:
 jobs:
   scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 25        # hard stop — a hung run must not burn minutes
+    # Hard stop so a hung run can't burn minutes. Raised from 25: the roster is
+    # now several hundred boards instead of ~60. Sharding (config/settings.yaml
+    # -> scan.shards) is the real defence; this is the backstop behind it.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 

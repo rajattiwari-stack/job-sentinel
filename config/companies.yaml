@@ -14,17 +14,25 @@
 
 companies:
   # ---- Security vendors (highest keyword density: ZIA/ZPA/EDR/SASE etc.) ----
+  # Zscaler moved off SmartRecruiters. The old entry returned HTTP 200 with
+  # zero postings on every run — no error, no alert, just silence from the
+  # single most relevant employer on the list.
   - name: Zscaler
-    ats: smartrecruiters
-    slug: Zscaler
+    ats: greenhouse
+    slug: zscaler
+    priority: high
   - name: CrowdStrike
     ats: workday
     slug: crowdstrike
     workday_host: crowdstrike.wd5.myworkdayjobs.com
     workday_path: crowdstrikecareers
+  # Same silent failure as Zscaler: migrated to Workday, old board serves 0.
   - name: Palo Alto Networks
-    ats: smartrecruiters
-    slug: PaloAltoNetworks2
+    ats: workday
+    slug: paloaltonetworks
+    workday_host: paloaltonetworks.wd5.myworkdayjobs.com
+    workday_path: panwexternalcareers
+    priority: high
   - name: SentinelOne
     ats: greenhouse
     slug: sentinellabs
