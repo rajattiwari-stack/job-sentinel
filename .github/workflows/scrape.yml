@@ -57,7 +57,7 @@ jobs:
           # companies.yaml is included because the self-healer rewrites entries
           # whose board migrated ATS. Without committing it the repair is
           # recomputed from scratch every single run.
-          git add state/seen_jobs.json tracker.xlsx config/companies.yaml
+          git add state/seen_jobs.json state/run_meta.json tracker.xlsx config/companies.yaml
           if git diff --cached --quiet; then
             echo "No state changes."
           else

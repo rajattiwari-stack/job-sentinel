@@ -81,3 +81,21 @@ def test_follow_up_message_shape():
                               "age_days": 18}])
     assert "18 days ago" in out and "Zscaler" in out
     assert "\n\n\n" not in out
+
+
+def test_reminder_is_suppressed_across_a_reload(tmp_path):
+    import json
+    from src.state import RunMeta
+    p = tmp_path / "run_meta.json"
+    meta = RunMeta(p)
+    assert should_send(meta.data, "last_follow_up", every_hours=24)
+    mark_sent(meta.data, "last_follow_up")
+    meta.save()
+    assert not should_send(RunMeta(p).data, "last_follow_up", every_hours=24)
+    assert "last_follow_up" in json.loads(p.read_text(encoding="utf-8"))
+
+
+def test_lost_meta_file_means_a_reminder_every_run(tmp_path):
+    from src.state import RunMeta
+    p = tmp_path / "gone.json"
+    assert should_send(RunMeta(p).data, "last_follow_up", every_hours=24)
