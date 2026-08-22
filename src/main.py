@@ -27,11 +27,12 @@ from .adapters import fetch_jobs
 from .matcher import MatchConfig, Matcher
 from .models import Company, Job
 from .notifier import notify
-from .state import SeenStore
+from .state import RunMeta, SeenStore
 from .tracker import update_tracker
 
 ROOT = Path(__file__).resolve().parent.parent
 STATE_FILE = ROOT / "state" / "seen_jobs.json"
+RUN_META_FILE = ROOT / "state" / "run_meta.json"
 TRACKER_FILE = ROOT / "tracker.xlsx"
 MAX_WORKERS = 6
 
@@ -120,7 +121,7 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true", help="Print matches, no notify, no state write")
     ap.add_argument("--profile", default=None, help="Override active_profile from settings.yaml")
     ap.add_argument("--shard", type=int, default=None,
-                    help="Which shard to scan (0-based). Default: derived from the clock.")
+                    help="Which shard to scan (0-based). Default: the next one in rotation.")
     ap.add_argument("--limit", type=int, default=0, help="Scan only the first N companies (debugging)")
     args = ap.parse_args()
 
@@ -128,9 +129,8 @@ def main() -> int:
     match_cfg, cap, scan_cfg = load_settings(args.profile)
 
     shards = max(1, int(scan_cfg.get("shards", 1)))
-    # Runs fire at 4 fixed hours; that hour picks the shard, so consecutive runs
-    # walk the whole roster instead of re-scanning one slice forever.
-    shard_index = args.shard if args.shard is not None else (datetime.now().hour // (24 // min(shards, 24))) % shards
+    meta = RunMeta(RUN_META_FILE)
+    shard_index = args.shard if args.shard is not None else meta.current_shard(shards)
     companies = select_shard(companies, shards, shard_index)
     if args.limit:
         companies = companies[: args.limit]
@@ -226,6 +226,8 @@ def main() -> int:
     # deferred jobs intentionally not marked → they flow out next run
     _ = deferred
     store.save()
+    meta.advance(shards)      # next run picks up the next slice
+    meta.save()
 
     # Systemic failure signal for CI alerting
     if companies and len(failures) > len(companies) / 2:

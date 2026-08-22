@@ -61,3 +61,41 @@ class SeenStore:
         tmp.write_text(json.dumps(self._data, indent=0, sort_keys=True), "utf-8")
         os.replace(tmp, self.path)
         log.info("State saved: %d fingerprints.", len(self._data))
+
+
+class RunMeta:
+    """Which shard to scan next, persisted between runs.
+
+    Deriving the shard from the clock looks simpler and is wrong: it assumes a
+    run spacing that the cron schedule doesn't have to honour. With four
+    six-hour buckets and runs at 04/08/12/16 UTC, `hour // 6` yields 0, 1, 2, 2
+    — the fourth shard is never scanned and those companies are never checked.
+
+    A counter that just advances by one each run is correct for ANY schedule,
+    including manual `workflow_dispatch` runs and GitHub's habit of delaying
+    cron under load.
+    """
+
+    def __init__(self, path: str | Path):
+        self.path = Path(path)
+        self._data: dict = {}
+        try:
+            loaded = json.loads(self.path.read_text("utf-8"))
+            self._data = loaded if isinstance(loaded, dict) else {}
+        except (FileNotFoundError, ValueError, json.JSONDecodeError):
+            self._data = {}
+
+    def current_shard(self, shards: int) -> int:
+        if shards <= 1:
+            return 0
+        return int(self._data.get("next_shard", 0)) % shards
+
+    def advance(self, shards: int) -> None:
+        if shards > 1:
+            self._data["next_shard"] = (self.current_shard(shards) + 1) % shards
+
+    def save(self) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = self.path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(self._data, indent=0, sort_keys=True), "utf-8")
+        os.replace(tmp, self.path)
