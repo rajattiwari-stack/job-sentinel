@@ -73,10 +73,25 @@ profiles:
       - SOC analyst
       - threat detection
       - threat intelligence
+      - threat hunting
+      - threat hunter
       - incident response
       - vulnerability management
       - penetration testing
       - DevSecOps
+      # observed missing while auditing live Palo Alto / Zscaler boards —
+      # real security titles that matched none of the keywords above
+      - firewall
+      - identity security
+      - IAM
+      - SOC
+      - security operations center
+      - malware
+      - forensics
+      - red team
+      - blue team
+      - PSIRT
+      - security compliance
       # early-career security titles. Deliberately NOT bare "trainee" /
       # "fresher" / "graduate engineer": keywords are OR-matched, so a generic
       # term would admit "Graduate Engineer Trainee - Mechanical" and every

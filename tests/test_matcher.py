@@ -31,6 +31,21 @@ def test_short_keyword_real_match():
     assert m.evaluate(j) is True and "EDR" in j.matched_keywords
 
 
+def test_three_letter_tokens_need_boundaries():
+    """SOC / IAM / EDR / ZIA are short enough to hide inside ordinary words.
+
+    They are matched against the TITLE, where "Social Media Manager" and
+    "Biamp Systems Engineer" are entirely plausible postings.
+    """
+    m = Matcher(MatchConfig(keywords=["SOC", "IAM", "EDR"], max_experience_years=2))
+    for title in ("Social Media Manager", "Biamp Systems Engineer", "Redraw Tooling Engineer"):
+        j = make(title=title, desc="1-2 years experience.")
+        assert m.evaluate(j) is False, f"{title!r} must not match a 3-letter token"
+    for title in ("SOC Analyst", "IAM Engineer", "EDR Detection Engineer"):
+        j = make(title=title, desc="1-2 years experience.")
+        assert m.evaluate(j) is True, f"{title!r} should match"
+
+
 def test_hyphen_and_space_variants():
     m = Matcher(CFG)
     j = make(title="Network-Security Analyst", desc="network-security monitoring. 0-2 years.")
