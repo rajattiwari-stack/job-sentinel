@@ -20,10 +20,10 @@ import requests
 
 log = logging.getLogger("http")
 
-DEFAULT_TIMEOUT = 25          # seconds
+DEFAULT_TIMEOUT = 25
 MAX_RETRIES = 4
 BACKOFF_BASE = 1.6
-PER_HOST_DELAY = 0.8          # polite gap between hits to the same host
+PER_HOST_DELAY = 0.8
 
 _UA = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
@@ -88,7 +88,6 @@ def request_json(
             if 500 <= resp.status_code < 600:
                 raise HttpError(f"HTTP {resp.status_code}")
             if resp.status_code in (401, 403, 404):
-                # Permanent for this run — do not retry, report upward.
                 raise HttpError(f"HTTP {resp.status_code} (permanent) for {url}")
             resp.raise_for_status()
             return resp.json()

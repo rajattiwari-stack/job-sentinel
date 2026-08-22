@@ -30,18 +30,10 @@ from ..models import Company, Job
 log = logging.getLogger("ats.workday")
 
 LIMIT = 20
-MAX_PAGES_PER_TERM = 15   # 300 results per search term — plenty
+MAX_PAGES_PER_TERM = 15
 
-# Workday's searchText is substring-ish, so "security" alone already returns
-# "network security", "security operations", "cloud security", ... The extra
-# terms were nearly pure overlap while multiplying the request count by 5, and
-# this adapter is the slowest one in the run by a wide margin.
 SEARCH_TERMS = ["security", "cyber"]
 
-# Hard ceiling on per-job detail fetches for ONE company. Each detail is a
-# separate round trip; an enterprise board with hundreds of security-ish titles
-# could otherwise spend the entire run budget on a single employer and starve
-# every company after it. Titles are ranked so the budget buys the best ones.
 MAX_DETAILS = 40
 
 _PLAUSIBLE = re.compile(
@@ -73,7 +65,6 @@ def fetch(company: Company) -> Iterable[Job]:
     seen: set[str] = set()
     candidates: list[dict] = []
 
-    # Pass 1 — cheap: page the search endpoint and collect plausible titles.
     for term in SEARCH_TERMS:
         offset = 0
         for _ in range(MAX_PAGES_PER_TERM):
@@ -103,8 +94,6 @@ def fetch(company: Company) -> Iterable[Job]:
             if offset >= int(data.get("total", 0)):
                 break
 
-    # Pass 2 — expensive: spend the detail budget on India/remote first, since
-    # a US-only posting will be discarded by the matcher anyway.
     candidates.sort(key=lambda c: 0 if _INDIA_LOC.search(c["loc"]) else 1)
     if len(candidates) > MAX_DETAILS:
         log.info("%s: %d security titles, fetching detail for the %d most relevant.",

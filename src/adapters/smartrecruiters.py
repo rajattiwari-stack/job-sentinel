@@ -24,20 +24,9 @@ log = logging.getLogger("ats.smartrecruiters")
 LIST_API = "https://api.smartrecruiters.com/v1/companies/{slug}/postings"
 DETAIL_API = "https://api.smartrecruiters.com/v1/companies/{slug}/postings/{pid}"
 PAGE = 100
-MAX_PAGES = 30    # 3000 postings ceiling — sanity guard
-MAX_DETAILS = 60  # per-company round-trip budget; see workday.py for the rationale
+MAX_PAGES = 30
+MAX_DETAILS = 60
 
-# Pre-filter deciding which postings are worth a detail request.
-#
-# This used to be "security-ish title OR India/remote location", which meant
-# every India-based opening — Finance, Sales, Facilities — bought a round trip.
-# The matcher now requires a keyword in the TITLE or DEPARTMENT, so a posting
-# whose title and function look nothing like security cannot match no matter
-# what its description says. Fetching it is pure cost, and SmartRecruiters
-# details all serialize behind one host's politeness delay.
-#
-# Deliberately broader than the configured keyword list: this is a cheap
-# pre-filter, and the Matcher does the precise work afterwards.
 _PLAUSIBLE = re.compile(
     r"secur|cyber|network|soc\b|siem|edr|xdr|threat|vulnerab|zscaler|zia\b|zpa\b|"
     r"firewall|sase|sse\b|ztna|casb|\bdlp\b|zero\s*trust|incident|penetration|"

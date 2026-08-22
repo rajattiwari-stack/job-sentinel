@@ -17,7 +17,7 @@ log = logging.getLogger("report")
 
 
 def write_dashboard(tracker_path: Path, out_path: Path) -> None:
-    from .tracker import _read_existing  # reuse the tolerant reader
+    from .tracker import _read_existing
     rows = _read_existing(Path(tracker_path))
     out_path.parent.mkdir(parents=True, exist_ok=True)
 

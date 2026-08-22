@@ -68,7 +68,7 @@ def main() -> int:
                     help="Also check each board belongs to the company it claims")
     args = ap.parse_args()
 
-    logging.disable(logging.WARNING)          # adapter retry chatter drowns the report
+    logging.disable(logging.WARNING)
     companies = load_companies()
     print(f"Checking {len(companies)} companies ...\n")
 

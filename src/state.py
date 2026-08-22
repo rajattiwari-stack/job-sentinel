@@ -27,7 +27,7 @@ RETENTION_DAYS = 90
 class SeenStore:
     def __init__(self, path: str | Path):
         self.path = Path(path)
-        self._data: dict[str, str] = {}   # fingerprint -> ISO date first seen
+        self._data: dict[str, str] = {}
         self._load()
 
     def _load(self) -> None:

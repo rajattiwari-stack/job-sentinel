@@ -30,7 +30,7 @@ def rows_of(path):
 def test_no_duplicates_across_runs(tmp_path):
     p = tmp_path / "t.xlsx"
     update_tracker(p, [make_job(1), make_job(2)])
-    update_tracker(p, [make_job(2), make_job(3)])   # job 2 repeats — must not duplicate
+    update_tracker(p, [make_job(2), make_job(3)])
     rows = rows_of(p)
     assert len(rows) == 3
     ids = [r[COL["Job ID"] - 1] for r in rows]
@@ -46,7 +46,7 @@ def test_user_edits_preserved(tmp_path):
     ws.cell(row=2, column=COL["Notes"], value="Spoke to recruiter")
     wb.save(p)
 
-    update_tracker(p, [make_job(2)])                # new run adds a job on top
+    update_tracker(p, [make_job(2)])
     by_company = {r[COL["Company"] - 1]: r for r in rows_of(p)}
     assert by_company["Co1"][COL["Applied?"] - 1] == "Yes"
     assert by_company["Co1"][COL["Notes"] - 1] == "Spoke to recruiter"
@@ -58,10 +58,10 @@ def test_deleted_rows_stay_deleted(tmp_path):
     update_tracker(p, [make_job(1), make_job(2)])
     wb = load_workbook(p)
     ws = wb[SHEET]
-    ws.delete_rows(3)                                # user deletes one row
+    ws.delete_rows(3)
     wb.save(p)
-    update_tracker(p, [make_job(3)])                 # next run: only job 3 is new
-    assert len(rows_of(p)) == 2 + 0  # 1 surviving + 1 new = 2
+    update_tracker(p, [make_job(3)])
+    assert len(rows_of(p)) == 2 + 0
 
 
 def test_formula_injection_defused(tmp_path):

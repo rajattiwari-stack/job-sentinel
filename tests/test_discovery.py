@@ -15,7 +15,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from src.discovery import identity_matches, slug_candidates  # noqa: E402
 
 
-# ---- identity: the impostors found in the real registry ----
 def test_rejects_impostor_boards():
     impostors = [
         ("CSS Corp (Movate)", "CloudKitchens"),
@@ -32,13 +31,13 @@ def test_rejects_impostor_boards():
 
 def test_accepts_the_same_company_written_differently():
     same = [
-        ("Dropbox India", "Dropbox"),              # location qualifier
-        ("Palantir Technologies", "Palantir"),     # corporate suffix
+        ("Dropbox India", "Dropbox"),
+        ("Palantir Technologies", "Palantir"),
         ("Western Digital India", "Western Digital"),
-        ("Alten India", "ALTEN"),                  # casing
+        ("Alten India", "ALTEN"),
         ("STT GDC India", "STT GDC"),
-        ("Rubrik", "Rubrik Job Board"),            # board-title noise
-        ("Corelight", "Job Board"),                # nothing to judge on
+        ("Rubrik", "Rubrik Job Board"),
+        ("Corelight", "Job Board"),
         ("Zscaler", "Zscaler"),
     ]
     for company, board in same:
@@ -53,11 +52,9 @@ def test_containment_alone_is_not_enough():
 
 
 def test_unknown_board_name_is_not_held_against_a_company():
-    # Lever and Ashby don't publish an owner; absence must not mean rejection.
     assert identity_matches("Anything", "")
 
 
-# ---- slug generation ----
 def test_slug_candidates_try_the_obvious_spellings():
     cands = slug_candidates("Palo Alto Networks")
     assert "paloaltonetworks" in cands
@@ -69,7 +66,6 @@ def test_slug_candidates_strip_corporate_suffixes():
 
 
 def test_slug_candidates_consider_a_parenthetical():
-    # "Splunk (Cisco)" may post under either brand.
     cands = slug_candidates("Splunk (Cisco)")
     assert "splunk" in cands
     assert any("cisco" in c for c in cands)

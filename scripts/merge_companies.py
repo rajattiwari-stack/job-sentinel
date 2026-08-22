@@ -76,7 +76,7 @@ def main() -> int:
 
     kept_curated = added = skip_name = skip_board = 0
 
-    for c in curated:                       # curated first — they win ties
+    for c in curated:
         n, b = norm(c["name"]), board_key(c)
         if n in seen_names or b in seen_boards:
             continue

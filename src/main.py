@@ -24,7 +24,7 @@ from pathlib import Path
 import yaml
 
 from .adapters import fetch_jobs
-from .matcher import MatchConfig, Matcher
+from .matcher import MatchConfig, Matcher, build_role_weights
 from .models import Company, Job
 from .notifier import notify
 from .state import RunMeta, SeenStore
@@ -33,7 +33,6 @@ from .tracker import update_tracker
 ROOT = Path(__file__).resolve().parent.parent
 STATE_FILE = ROOT / "state" / "seen_jobs.json"
 RUN_META_FILE = ROOT / "state" / "run_meta.json"
-STRETCH_FILE = ROOT / "state" / "seen_stretch.json"
 TRACKER_FILE = ROOT / "tracker.xlsx"
 MAX_WORKERS = 6
 
@@ -90,7 +89,8 @@ def load_settings(profile_override: str | None) -> tuple[MatchConfig, int, dict]
         exclude_titles=prof.get("exclude_titles") or [],
         priority_boost=prof.get("priority_boost") or {},
         require_role_match=bool(prof.get("require_role_match", True)),
-        stretch_years=int(prof.get("stretch_years", 3)),
+        max_posting_age_days=int(prof.get("max_posting_age_days", 0)),
+        role_weights=build_role_weights(prof.get("role_weights") or []),
     )
     cap = int((raw.get("report") or {}).get("max_jobs_per_run", 60))
     scan = raw.get("scan") or {}
@@ -108,7 +108,7 @@ def scan_company(company: Company, matcher: Matcher) -> tuple[str, list[Job], st
         for j in jobs:
             if not (j.title and j.url):
                 continue
-            j.priority = company.priority      # company tier ranks the alert
+            j.priority = company.priority
             if matcher.evaluate(j):
                 matched.append(j)
         log.info("%-22s %4d postings → %d matches", company.name, len(jobs), len(matched))
@@ -118,41 +118,9 @@ def scan_company(company: Company, matcher: Matcher) -> tuple[str, list[Job], st
         return company.name, [], str(e), 0
 
 
-def _send_health(meta: RunMeta, scanned: int, failures: dict[str, str],
-                 postings_seen: dict[str, int], healed: int) -> None:
-    """Weekly note about boards the self-healer couldn't fix on its own."""
-    from .digest import format_health, mark_sent, should_send
+def _send_extras(meta: RunMeta) -> None:
+    from .digest import find_follow_ups, format_follow_ups, mark_sent, should_send
     from .notifier import send_telegram_text
-
-    if not should_send(meta.data, "last_health_report", every_hours=168):
-        return
-    empty = sorted(n for n, c in postings_seen.items() if c == 0 and n not in failures)
-    if send_telegram_text(format_health(scanned, failures, empty, healed)):
-        mark_sent(meta.data, "last_health_report")
-
-
-def _send_extras(matcher: Matcher, store: SeenStore, meta: RunMeta) -> None:
-    """Stretch-role digest and application follow-up nudges.
-
-    Stretch roles are de-duplicated through their own SeenStore: a role that is
-    still open three days later must not be re-sent every run. They're marked
-    seen only after the message lands, same at-least-once rule as job alerts.
-    """
-    from .digest import (find_follow_ups, format_follow_ups, format_stretch,
-                         mark_sent, should_send)
-    from .notifier import send_telegram_text
-
-    if matcher.stretch and should_send(meta.data, "last_stretch_digest"):
-        seen_stretch = SeenStore(STRETCH_FILE)
-        fresh = {j.fingerprint: j for j in matcher.stretch
-                 if seen_stretch.is_new(j.fingerprint)}
-        if fresh:
-            log.info("Stretch digest: %d role(s) just past the experience band.", len(fresh))
-            if send_telegram_text(format_stretch(list(fresh.values()))):
-                for fp in fresh:
-                    seen_stretch.mark(fp)
-                seen_stretch.save()
-                mark_sent(meta.data, "last_stretch_digest")
 
     if should_send(meta.data, "last_follow_up", every_hours=24):
         due = find_follow_ups(TRACKER_FILE)
@@ -197,7 +165,6 @@ def main() -> int:
             postings_seen[name] = seen
             all_matches.extend(matched)
 
-    # Dedup within the run (same job can surface via multiple Workday searches / offices)
     uniq: dict[str, Job] = {}
     for j in all_matches:
         uniq.setdefault(j.fingerprint, j)
@@ -219,13 +186,11 @@ def main() -> int:
                   f"{j.experience_note} | {','.join(j.matched_keywords)} | {j.url}")
         return 0
 
-    # Cumulative archive (no action needed from you) — also a 2nd dedup layer.
     added = update_tracker(TRACKER_FILE, new_jobs)
     log.info("Archive tracker: %d row(s) added.", added)
 
     if new_jobs:
-        delivered = notify(new_jobs)          # instant text alerts with links
-        # Compiled Excel of THIS run's jobs → sent as a file into Telegram
+        delivered = notify(new_jobs)
         from .notifier import send_telegram_excel
         from .tracker import build_run_workbook
         stamp = datetime.now().strftime("%Y-%m-%d_%H%M")
@@ -239,7 +204,7 @@ def main() -> int:
         except Exception as e:  # noqa: BLE001 — Excel is a bonus, never blocks alerts
             log.error("Run-Excel build/send failed: %s", e)
         finally:
-            run_xlsx.unlink(missing_ok=True)   # ephemeral: lives in Telegram, not the repo
+            run_xlsx.unlink(missing_ok=True)
 
         if delivered:
             for j in new_jobs:
@@ -249,16 +214,11 @@ def main() -> int:
     else:
         log.info("No new jobs this run.")
 
-    # Extras: strictly additive, and never allowed to delay or suppress an
-    # actual job alert — hence after delivery, each in its own try block.
     try:
-        _send_extras(matcher, store, meta)
+        _send_extras(meta)
     except Exception as e:  # noqa: BLE001
-        log.warning("Digest pass failed: %s", e)
+        log.warning("Follow-up pass failed: %s", e)
 
-    # Self-healing: a board that migrated ATS usually stops erroring and simply
-    # goes quiet, so zero-posting companies are suspects, not just failures.
-    healed = 0
     try:
         from .healer import (apply_fixes, diagnose, format_report, heal,
                              record_attempts)
@@ -270,15 +230,9 @@ def main() -> int:
             fixes = heal(suspects)
             record_attempts(attempts, suspects, fixes)
             if apply_fixes(ROOT / "config" / "companies.yaml", fixes):
-                healed = len(fixes)
                 send_telegram_text(format_report(fixes))
     except Exception as e:  # noqa: BLE001 — healing must never break delivery
         log.warning("Self-healing pass failed: %s", e)
-
-    try:
-        _send_health(meta, len(companies), failures, postings_seen, healed)
-    except Exception as e:  # noqa: BLE001
-        log.warning("Health report failed: %s", e)
 
     try:
         from .report import write_dashboard
@@ -286,13 +240,11 @@ def main() -> int:
     except Exception as e:  # noqa: BLE001 — dashboard is cosmetic, never fatal
         log.warning("Dashboard generation failed: %s", e)
 
-    # deferred jobs intentionally not marked → they flow out next run
     _ = deferred
     store.save()
-    meta.advance(shards)      # next run picks up the next slice
+    meta.advance(shards)
     meta.save()
 
-    # Systemic failure signal for CI alerting
     if companies and len(failures) > len(companies) / 2:
         log.error("More than half of companies failed: %s", list(failures))
         return 1

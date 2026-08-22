@@ -47,7 +47,7 @@ def test_rotation_visits_every_shard(tmp_path):
     p = tmp_path / "run_meta.json"
     shards, visited = 4, []
     for _ in range(shards):
-        meta = RunMeta(p)                 # reload each run, as a real run does
+        meta = RunMeta(p)
         visited.append(meta.current_shard(shards))
         meta.advance(shards)
         meta.save()

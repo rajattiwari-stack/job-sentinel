@@ -40,7 +40,7 @@ from .models import Company
 
 log = logging.getLogger("healer")
 
-MAX_HEAL_ATTEMPTS = 12       # bound the probe cost of one bad run
+MAX_HEAL_ATTEMPTS = 12
 
 
 def _same_board(company: Company, found: dict) -> bool:
@@ -52,7 +52,7 @@ def _same_board(company: Company, found: dict) -> bool:
     return str(found.get("slug", "")).lower() == str(company.slug).lower()
 
 
-GIVE_UP_AFTER = 3            # consecutive failed repair attempts before backing off
+GIVE_UP_AFTER = 3
 
 
 def diagnose(companies: list[Company], counts: dict[str, int],
@@ -131,22 +131,14 @@ def apply_fixes(config_path: Path, fixes: list[dict]) -> int:
             i += 1
             continue
 
-        # Consume this entry's property lines: everything indented deeper than
-        # the "- name:" line, stopping at the next entry or any outdent. Working
-        # line-by-line (rather than one block regex) keeps the boundary between
-        # entries explicit — a regex that swallows the trailing newline silently
-        # welds the next company onto this one.
         indent = m.group(1)
         header, i = lines[i], i + 1
         priority, kept_comments = "unknown", []
-        # Properties align under `name`, i.e. past the "- ". Take the real
-        # indentation from the file rather than assuming a width, so a registry
-        # written with different spacing still round-trips as valid YAML.
         pad = indent + "  "
         first_prop = True
         while i < len(lines):
             nxt = lines[i]
-            if not nxt.strip():                       # blank line ends the entry
+            if not nxt.strip():
                 break
             if entry_start.match(nxt) or not nxt.startswith(indent + " "):
                 break

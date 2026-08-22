@@ -28,7 +28,6 @@ UA = (
 TIMEOUT = 12
 PER_HOST_DELAY = 0.18
 
-# Corporate noise that never appears in an ATS slug.
 _SUFFIXES = re.compile(
     r"\b(inc|llc|ltd|limited|pvt|private|corp|corporation|company|co|group|holdings|"
     r"technologies|technology|systems|software|solutions|services|labs|lab|"
@@ -54,7 +53,7 @@ def _wait(host: str) -> None:
 def slug_candidates(name: str, limit: int = 4) -> list[str]:
     """Plausible ATS slugs for a company name, best guess first."""
     extras: list[str] = []
-    paren = re.findall(r"\(([^)]+)\)", name)      # "Splunk (Cisco)" -> try "Cisco" too
+    paren = re.findall(r"\(([^)]+)\)", name)
     base = re.sub(r"\([^)]*\)", " ", name)
 
     def norm(s: str) -> list[str]:
@@ -65,11 +64,11 @@ def slug_candidates(name: str, limit: int = 4) -> list[str]:
         out = []
         for variant in dict.fromkeys([stripped, s]):
             low = variant.lower()
-            out.append(re.sub(r"[\s-]+", "", low))       # paloaltonetworks
-            out.append(re.sub(r"[\s_]+", "-", low))      # palo-alto-networks
+            out.append(re.sub(r"[\s-]+", "", low))
+            out.append(re.sub(r"[\s_]+", "-", low))
             first = low.split()[0] if low.split() else ""
             if first and len(first) > 3:
-                out.append(first)                        # zscaler
+                out.append(first)
         return out
 
     cands = norm(base)
@@ -83,8 +82,6 @@ def slug_candidates(name: str, limit: int = 4) -> list[str]:
     return ordered[:limit]
 
 
-# ------------------------------------------------------------------ probes ---
-# Each returns (ok, job_count). ok is True only for a well-formed, useful board.
 
 def probe_greenhouse(slug: str) -> tuple[bool, int]:
     _wait("boards-api.greenhouse.io")
@@ -141,9 +138,6 @@ PROBES: list[tuple[str, Callable[[str], tuple[bool, int]]]] = [
     ("smartrecruiters", probe_smartrecruiters),
 ]
 
-# An ATS URL embedded in a careers page tells us the truth without guessing —
-# and it is the only way to find a Workday board, whose host and path are not
-# derivable from a company name.
 _EMBED = [
     ("greenhouse", re.compile(r"(?:boards|job-boards)\.greenhouse\.io/(?:embed/job_board\?for=)?([a-z0-9_-]+)", re.I)),
     ("lever", re.compile(r"jobs\.lever\.co/([a-z0-9_-]+)", re.I)),
@@ -207,8 +201,6 @@ def board_identity(ats: str, slug: str) -> Optional[str]:
     return None
 
 
-# Boards routinely title themselves "Acme Job Board" or just "Careers". Those
-# words carry no identity and would otherwise sink a correct match on length.
 _BOARD_NOISE = re.compile(r"\b(job\s*board|jobs?|careers?|board|hiring|opportunities)\b",
                           re.IGNORECASE)
 
@@ -231,7 +223,7 @@ def identity_matches(company_name: str, board_name: str, threshold: float = 0.6)
     """
     a, b = _strip_to_core(company_name), _strip_to_core(board_name)
     if not a or not b:
-        return True                          # nothing to judge on — don't punish
+        return True
     if a == b:
         return True
     short, long = sorted((a, b), key=len)

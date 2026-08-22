@@ -1,10 +1,4 @@
-"""Tests for the stretch digest and follow-up reminders.
-
-Both are rate-limited and both send Telegram messages, so the failure mode
-worth guarding is spam: a 4x-daily bot re-sending the same digest every run.
-
-Run: python -m pytest tests/test_digest.py -v
-"""
+"""Tests for follow-up reminders and their rate limiting."""
 import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -12,8 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.digest import (FOLLOW_UP_DAYS, find_follow_ups, format_follow_ups,  # noqa: E402
-                        format_stretch, mark_sent, should_send)
-from src.matcher import MatchConfig, Matcher  # noqa: E402
+                        mark_sent, should_send)
 from src.models import Job  # noqa: E402
 
 
@@ -24,7 +17,6 @@ def job(**kw):
     return Job(**base)
 
 
-# ---- rate limiting ----
 def test_first_send_is_allowed():
     assert should_send({}, "k")
 
@@ -44,48 +36,6 @@ def test_corrupt_timestamp_does_not_block_forever():
     assert should_send({"k": "not-a-timestamp"}, "k")
 
 
-# ---- which roles count as a stretch ----
-def _matcher(cap=2, stretch=3):
-    return Matcher(MatchConfig(keywords=["security engineer"], max_experience_years=cap,
-                               stretch_years=stretch))
-
-
-def test_role_just_past_the_cap_is_a_stretch():
-    m = _matcher()
-    assert m.evaluate(job(description="5+ years of security experience.")) is False
-    assert len(m.stretch) == 1
-    assert "needs 5" in m.stretch[0].experience_note
-
-
-def test_role_far_past_the_cap_is_not_a_stretch():
-    m = _matcher()
-    assert m.evaluate(job(description="12+ years of security experience.")) is False
-    assert m.stretch == []
-
-
-def test_a_real_match_is_not_also_a_stretch():
-    m = _matcher()
-    assert m.evaluate(job(description="1-2 years of experience.")) is True
-    assert m.stretch == []
-
-
-def test_rejects_for_other_reasons_are_not_stretches():
-    """Only the year count may be the thing that failed."""
-    m = _matcher()
-    m.evaluate(job(location="Remote - Texas, USA", description="5+ years."))   # wrong region
-    m.evaluate(job(title="Product Designer", description="5+ years."))          # wrong role
-    assert m.stretch == []
-
-
-def test_stretch_message_names_the_requirement():
-    j = job()
-    j.experience_note = "needs 4+ yrs"
-    out = format_stretch([j])
-    assert "needs 4+ yrs" in out and "Acme" in out
-    assert "\n\n\n" not in out          # no doubled blank lines
-
-
-# ---- follow-ups ----
 def _tracker(tmp_path, rows):
     from src.tracker import _write
     p = tmp_path / "tracker.xlsx"
@@ -131,22 +81,3 @@ def test_follow_up_message_shape():
                               "age_days": 18}])
     assert "18 days ago" in out and "Zscaler" in out
     assert "\n\n\n" not in out
-
-
-# ---- weekly health report ----
-def test_health_report_names_the_problems():
-    from src.digest import format_health
-    out = format_health(60, {"Foo": "HTTP 404"}, ["Bar", "Baz"], healed=2)
-    assert "57/60" in out and "Foo" in out and "Bar" in out and "2 auto-repaired" in out
-
-
-def test_health_report_when_all_is_well():
-    from src.digest import format_health
-    out = format_health(60, {}, [])
-    assert "60/60" in out and "Nothing to do" in out
-
-
-def test_health_report_is_weekly_not_per_run():
-    meta = {}
-    mark_sent(meta, "last_health_report")
-    assert not should_send(meta, "last_health_report", every_hours=168)

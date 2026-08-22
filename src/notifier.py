@@ -23,11 +23,20 @@ from .models import Job
 
 log = logging.getLogger("notify")
 
-TG_LIMIT = 4000  # headroom under the 4096 hard cap
+TG_LIMIT = 4000
 
 
 def _esc(s: str) -> str:
     return html.escape(s or "", quote=False)
+
+
+ROLE_LABELS = {
+    "vulnerability_exposure": "🥇 Vulnerability / Exposure Mgmt — your strongest fit",
+    "cloud_sase_zerotrust": "🥈 Cloud / SASE / Zero Trust — direct ZIA overlap",
+    "soc_detection": "🥉 SOC / Detection",
+    "security_engineer": "🔧 Security Engineering",
+    "grc_compliance": "📋 GRC / Compliance",
+}
 
 
 def format_job_html(j: Job) -> str:
@@ -37,8 +46,9 @@ def format_job_html(j: Job) -> str:
         f"📍 {_esc(j.location or 'Location not listed')}",
         f"🎯 {_esc(kw)}   ⏳ {_esc(j.experience_note)}",
     ]
-    # Age, not a raw date: "🔥 posted today" tells you to drop everything,
-    # "2026-08-14" makes you do the arithmetic yourself.
+    label = ROLE_LABELS.get(j.role_fit)
+    if label:
+        lines.append(label)
     from .matcher import days_since_posted
     age = days_since_posted(j)
     if age is not None:
@@ -47,16 +57,14 @@ def format_job_html(j: Job) -> str:
         elif age <= 7:
             lines.append(f"🗓 posted {age} days ago")
         else:
-            lines.append(f"🗓 posted {age} days ago{' — likely stale' if age > 30 else ''}")
-    elif j.posted_at:
-        lines.append(f"🗓 {_esc(j.posted_at)}")
+            lines.append(f"🗓 posted {age} days ago")
     return "\n".join(lines)
 
 
 def chunk_messages(header: str, blocks: list[str], limit: int = TG_LIMIT) -> list[str]:
     msgs, cur = [], header
     for b in blocks:
-        if len(b) > limit:                       # pathological single block
+        if len(b) > limit:
             b = b[: limit - 20] + "…"
         if len(cur) + len(b) + 2 > limit:
             msgs.append(cur)
@@ -110,7 +118,7 @@ def send_telegram(jobs: list[Job]) -> bool:
             except Exception as e:  # noqa: BLE001 — delivery must not kill the run
                 log.error("Telegram send to %s failed: %s", chat_id, e)
                 chat_ok = False
-        ok = ok or chat_ok   # success if AT LEAST one recipient got it
+        ok = ok or chat_ok
     return ok
 
 

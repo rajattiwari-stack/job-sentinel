@@ -1,25 +1,11 @@
-# Job Sentinel settings.
-#
-# Role "profiles" make this system evolvable: to hunt data-engineer roles later,
-# add a new profile block and flip `active_profile` (or run both — see main.py).
-
 active_profile: cybersecurity
 
 profiles:
   cybersecurity:
-    # Candidate targets EARLY-CAREER roles: 0-2 years.
-    max_experience_years: 2
+    max_experience_years: 3
+    max_posting_age_days: 45
+    require_role_match: true
 
-    # Roles that clear every other gate but ask for up to (cap + this) years go
-    # out as a separate, clearly-labelled "stretch" digest instead of being
-    # dropped. At a 2-yr cap the strict match list is empty for days at a time,
-    # and "needs 3 years" is a number plenty of people get hired past.
-    stretch_years: 3
-
-    # Titles that disqualify outright. At a 0-2 yr target these matter more than
-    # the experience parser: senior postings very often state no year count at
-    # all, so the number-based gate lets them through and only the title betrays
-    # them. Word-boundary matched — "lead" never fires inside "leadership".
     exclude_titles:
       - senior
       - sr
@@ -31,7 +17,7 @@ profiles:
       - head
       - vp
       - vice president
-      - architect          # architect roles are 8+ yrs in practice
+      - architect
       - distinguished
       - fellow
       - chief
@@ -39,78 +25,225 @@ profiles:
       - expert
       - iii
       - iv
+      - tac
+      - technical support
+      - customer support
+      - cloud support
+      - support engineer
+      - support specialist
+      - support analyst
+      - product support
+      - helpdesk
+      - help desk
+      - service desk
+      - l1
+      - tier 1
+      - voice process
+      - bpo
+      - call center
+      - call centre
+      - sales
+      - account executive
+      - business development
+      - solutions engineer
+      - sales engineer
+      - presales
+      - pre-sales
+      - customer success
+      - account manager
+      - recruiter
+      - multi-lingual
+      - multilingual
+      - data center security
+      - datacenter security
+      - physical security
+      - security guard
+      - security officer
+      - security supervisor
+      - loss prevention
+      - fire safety
+      - surveillance
 
-    # Company tiers come from the source list's profile_fit and are set by
-    # scripts/discover_ats.py. Boost ranks the alert, it never filters.
     priority_boost:
       high: 6
       medium: 2
       low: 0
       unknown: 0
 
+    role_weights:
+      - name: vulnerability_exposure
+        weight: 12
+        patterns:
+          - vulnerability management
+          - vulnerability engineer
+          - vulnerability analyst
+          - exposure management
+          - attack surface
+          - remediation engineer
+          - cyber risk analyst
+          - threat and vulnerability
+      - name: cloud_sase_zerotrust
+        weight: 10
+        patterns:
+          - cloud security
+          - SASE
+          - SSE
+          - zero trust
+          - ZTNA
+          - secure access
+          - network security
+          - proxy
+          - secure web gateway
+      - name: soc_detection
+        weight: 7
+        patterns:
+          - SOC analyst
+          - detection engineer
+          - threat detection
+          - incident response
+          - incident responder
+          - threat hunting
+          - SIEM
+          - security operations
+          - MDR
+      - name: security_engineer
+        weight: 7
+        patterns:
+          - security engineer
+          - cybersecurity engineer
+          - information security
+          - infrastructure security
+          - platform security
+          - security automation
+          - product security
+          - application security
+          - DevSecOps
+      - name: grc_compliance
+        weight: 3
+        patterns:
+          - GRC
+          - security compliance
+          - risk analyst
+          - ISMS
+          - third party risk
+
     keywords:
-      # product-specific (word-boundary matched — safe for short tokens)
       - ZIA
       - ZPA
+      - ZDX
       - Zscaler
       - Avalor
+      - Risk360
       - UVM
-      - EDR
-      - XDR
       - SASE
       - SSE
       - ZTNA
       - CASB
       - DLP
-      # domain
-      - cyber security
-      - cybersecurity
-      - network security
+      - SWG
+      - secure web gateway
+      - zero trust
+      - cloud proxy
+      - SSL inspection
+      - TLS inspection
+      - URL filtering
+      - cloud firewall
+      - DNS security
+      - proxy architecture
+      - PAC file
+      - GRE tunnel
+      - IPSec
+      - traffic forwarding
+      - Netskope
+      - Prisma Access
+      - Cloudflare One
+      - vulnerability management
+      - exposure management
+      - vulnerability assessment
+      - vulnerability engineer
+      - vulnerability analyst
+      - CVE
+      - CVSS
+      - EPSS
+      - patch management
+      - risk scoring
+      - risk quantification
+      - asset intelligence
+      - attack surface
+      - CAASM
+      - remediation
+      - VMDR
+      - InsightVM
+      - Nessus
+      - Tenable
+      - Qualys
+      - Rapid7
+      - CNAPP
+      - CSPM
+      - cloud security posture
+      - EDR
+      - XDR
+      - endpoint security
+      - endpoint detection
+      - threat hunting
+      - threat hunter
+      - threat detection
+      - threat intelligence
+      - malware analysis
+      - incident response
+      - SIEM
+      - SOC
+      - security operations center
+      - MITRE ATT&CK
+      - indicator of compromise
+      - detection engineering
+      - Sigma rules
+      - YARA
+      - Splunk
+      - Microsoft Sentinel
+      - CrowdStrike
+      - SentinelOne
+      - Defender for Endpoint
+      - Cortex XDR
       - security engineer
       - security analyst
-      - security operations
+      - cybersecurity
+      - cyber security
+      - cyber defence
+      - cyber defense
+      - cloud security
+      - network security
       - information security
       - infosec
       - application security
-      - cloud security
       - product security
-      - zero trust
-      - SIEM
-      - SOC analyst
-      - threat detection
-      - threat intelligence
-      - threat hunting
-      - threat hunter
-      - incident response
-      - vulnerability management
-      - penetration testing
       - DevSecOps
-      # observed missing while auditing live Palo Alto / Zscaler boards —
-      # real security titles that matched none of the keywords above
-      - firewall
-      - identity security
+      - security operations
+      - security consultant
+      - security specialist
+      - security associate
       - IAM
-      - SOC
-      - security operations center
-      - malware
-      - forensics
+      - identity security
+      - identity and access management
+      - penetration testing
       - red team
       - blue team
+      - forensics
       - PSIRT
+      - GRC
+      - ISO 27001
+      - SOC 2
+      - NIST
       - security compliance
-      # early-career security titles. Deliberately NOT bare "trainee" /
-      # "fresher" / "graduate engineer": keywords are OR-matched, so a generic
-      # term would admit "Graduate Engineer Trainee - Mechanical" and every
-      # other non-security opening. Seniority is handled by exclude_titles and
-      # max_experience_years, not by loosening the domain filter.
-      - security associate
-      - associate security
-      - security intern
-      - security trainee
+      - security audit
+      - firewall
+      - SD-WAN
+      - packet capture
+      - Wireshark
 
-  # Ready for the future — flip active_profile to use.
   data_engineering:
-    max_experience_years: 2
+    max_experience_years: 3
+    max_posting_age_days: 45
     exclude_titles: [senior, sr, staff, principal, lead, manager, director, head, vp, architect]
     keywords:
       - data engineer
@@ -125,7 +258,8 @@ profiles:
       - BigQuery
 
   software_engineering:
-    max_experience_years: 2
+    max_experience_years: 3
+    max_posting_age_days: 45
     exclude_titles: [senior, sr, staff, principal, lead, manager, director, head, vp, architect]
     keywords:
       - software engineer
@@ -134,23 +268,9 @@ profiles:
       - distributed systems
       - SDE
 
-# Location policy is code-level (India onsite OR remote-open-to-India) — see src/matcher.py.
 report:
-  max_jobs_per_run: 60   # safety valve: never spam more than this in one notification burst
+  max_jobs_per_run: 60
 
-# With a large company list a single run can exceed the Actions timeout. Sharding
-# splits the roster across consecutive runs: run N scans shard (N mod shards).
-# `shards: 1` disables it entirely and every run scans everything.
 scan:
-  # MEASURED, not guessed: a full sweep of all 250 boards takes ~7 min wall at
-  # 12 workers, timed end-to-end from a home connection — slower than a GitHub
-  # runner, so treat it as an upper bound against the 45-min job timeout.
-  #
-  # Sharding is therefore switched OFF. It costs alert latency (a 4-shard
-  # rotation means a new posting can sit unseen for ~24h) and buys headroom we
-  # measurably do not need. Applying early is worth real money in a job hunt.
-  #
-  # Raise this to 2 or 4 if the roster grows several-fold or runs start
-  # approaching the timeout — the rotation is correct and tested either way.
   shards: 1
   max_workers: 12

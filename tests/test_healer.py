@@ -60,12 +60,9 @@ def test_heal_rewrites_only_the_target(tmp_path):
     assert applied == 1
 
     got = _load(p)
-    # The healed entry changed...
     assert got["Zscaler"]["ats"] == "greenhouse"
     assert got["Zscaler"]["slug"] == "zscaler"
-    assert got["Zscaler"]["priority"] == "high"     # preserved, not reset
-    # ...and nothing else did. This is the regression: the next entry used to
-    # get absorbed into the healed one.
+    assert got["Zscaler"]["priority"] == "high"
     assert len(got) == 3
     assert got["Cloudflare"]["slug"] == "cloudflare"
     assert got["Cloudflare"]["ats"] == "greenhouse"
@@ -113,7 +110,6 @@ def test_unknown_company_is_skipped_not_fatal(tmp_path):
     assert len(_load(p)) == 3
 
 
-# ---- which companies are even suspects ----
 def test_zero_postings_is_a_suspect():
     live = Company(name="Live", ats="greenhouse", slug="live")
     dead = Company(name="Dead", ats="smartrecruiters", slug="dead")
@@ -133,13 +129,11 @@ def test_healthy_company_is_never_probed():
 
 
 def test_suspect_list_is_bounded():
-    # A systemic outage (everything at zero) must not become hundreds of probes.
     many = [Company(name=f"C{i}", ats="greenhouse", slug=f"c{i}") for i in range(200)]
     assert len(diagnose(many, {c.name: 0 for c in many}, {})) <= 12
 
 
 def test_same_board_is_not_a_fix():
-    # Re-finding the board we already have is not a repair.
     c = Company(name="X", ats="greenhouse", slug="acme")
     assert _same_board(c, {"ats": "greenhouse", "slug": "ACME"})
     assert not _same_board(c, {"ats": "lever", "slug": "acme"})
@@ -154,7 +148,6 @@ def test_same_board_compares_workday_host_and_path():
                                "workday_path": "different"})
 
 
-# ---- probe budget must not be monopolised by the unfixable ----
 def test_repeatedly_unfixable_company_is_set_aside():
     """Tenable/Akamai/Fortinet/Splunk can't be re-resolved from anything we
     hold. Without a memory they'd eat the budget every run forever, and a
@@ -173,7 +166,7 @@ def test_attempts_accumulate_then_clear_on_success():
     record_attempts(a, [c], [])
     record_attempts(a, [c], [])
     assert a["X"] == 2
-    record_attempts(a, [c], [{"name": "X"}])      # repaired
+    record_attempts(a, [c], [{"name": "X"}])
     assert "X" not in a
 
 

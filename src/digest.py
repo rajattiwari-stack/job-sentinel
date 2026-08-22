@@ -1,45 +1,22 @@
-"""Two nudges the raw alert feed can't give you.
-
-1. STRETCH ROLES
-   At a 0-2 year cap the honest match list is empty for days at a time. That
-   isn't the filter misbehaving — early-career security roles in India are
-   genuinely scarce — but a silent bot is indistinguishable from a broken one,
-   and "needs 3 years" is a number plenty of people get hired past. So roles
-   that cleared every gate except the year count, and missed by a little, go
-   out as a separate clearly-labelled digest.
-
-2. FOLLOW-UPS
-   Applications die from silence more than from rejection. Any row you marked
-   Applied = Yes that has been quiet for FOLLOW_UP_DAYS gets one reminder.
-
-Both are rate-limited by state/run_meta.json so a 4x-daily bot doesn't send
-the same digest four times a day, and both are strictly additive: neither can
-suppress or delay a real job alert.
-"""
+"""Application follow-up reminders read from tracker.xlsx."""
 from __future__ import annotations
 
+import html
 import logging
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-from .models import Job
-
 log = logging.getLogger("digest")
 
-FOLLOW_UP_DAYS = 10          # silence after this long is worth a nudge
-MAX_STRETCH_IN_DIGEST = 15
+FOLLOW_UP_DAYS = 10
 MAX_FOLLOW_UPS = 12
 
 
 def _esc(s: str) -> str:
-    import html
     return html.escape(s or "", quote=False)
 
 
-# ------------------------------------------------------------ stretch roles ---
-
 def should_send(meta_data: dict, key: str, every_hours: int = 20) -> bool:
-    """True at most once per `every_hours`. Keeps a 4x-daily bot from repeating."""
     last = meta_data.get(key)
     if not last:
         return True
@@ -53,30 +30,12 @@ def mark_sent(meta_data: dict, key: str) -> None:
     meta_data[key] = datetime.now().isoformat(timespec="seconds")
 
 
-def format_stretch(jobs: list[Job]) -> str:
-    jobs = sorted(jobs, key=lambda j: (-j.score, j.company))[:MAX_STRETCH_IN_DIGEST]
-    header = (
-        f"📈 <b>Stretch roles</b> — {len(jobs)} role(s) just past your experience band.\n"
-        "<i>Everything else matched: security title, India/remote, no seniority flag.</i>"
-    )
-    blocks = [
-        f"🏢 <b>{_esc(j.company)}</b> — <a href=\"{_esc(j.url)}\">{_esc(j.title)}</a>\n"
-        f"📍 {_esc(j.location or 'Location not listed')}\n"
-        f"⏳ {_esc(j.experience_note)}"
-        for j in jobs
-    ]
-    return "\n\n".join([header, *blocks])
-
-
-# --------------------------------------------------------------- follow-ups ---
-
 def find_follow_ups(tracker_path: Path, today: date | None = None) -> list[dict]:
-    """Applied rows that have gone quiet. Never raises — this is a nicety."""
     today = today or date.today()
     try:
         from .tracker import _read_existing
         rows = _read_existing(Path(tracker_path))
-    except Exception as e:                    # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         log.warning("Follow-up scan failed to read tracker: %s", e)
         return []
 
@@ -90,39 +49,12 @@ def find_follow_ups(tracker_path: Path, today: date | None = None) -> list[dict]
         try:
             applied = date.fromisoformat(raw[:10])
         except ValueError:
-            continue                          # hand-typed dates vary; skip quietly
+            continue
         age = (today - applied).days
         if age >= FOLLOW_UP_DAYS:
             due.append({**r, "age_days": age})
     due.sort(key=lambda r: -r["age_days"])
     return due[:MAX_FOLLOW_UPS]
-
-
-def format_health(scanned: int, failures: dict[str, str], empty: list[str],
-                  healed: int = 0) -> str:
-    """Weekly registry health note.
-
-    The self-healer repairs what it can resolve automatically. What's left —
-    a board that 404s, or one that has been empty for weeks — needs a human,
-    and without a periodic nudge nobody ever looks. A roster decays quietly:
-    each individual dead company is invisible against 249 working ones.
-    """
-    ok = scanned - len(failures) - len(empty)
-    lines = [f"🩺 <b>Registry health</b> — {ok}/{scanned} boards healthy this run."]
-    if healed:
-        lines.append(f"🔧 {healed} auto-repaired since the last report.")
-    if failures:
-        lines.append(f"\n<b>Failing ({len(failures)}):</b>")
-        for name, err in list(failures.items())[:10]:
-            lines.append(f"• {_esc(name)} — {_esc(err[:70])}")
-    if empty:
-        lines.append(f"\n<b>Serving zero jobs ({len(empty)}):</b>")
-        lines.append(_esc(", ".join(empty[:20])))
-        lines.append("<i>Usually a moved board. Re-run scripts/discover_ats.py "
-                     "for these, or set enabled: false to stop watching.</i>")
-    if not failures and not empty:
-        lines.append("Everything responding. Nothing to do.")
-    return "\n".join(lines)
 
 
 def format_follow_ups(rows: list[dict]) -> str:

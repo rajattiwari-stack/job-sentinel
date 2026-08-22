@@ -20,7 +20,7 @@ MAX_PAGES = 10
 QUERIES = [
     {"base_query": "security", "country": "IND"},
     {"base_query": "network security", "country": "IND"},
-    {"base_query": "security engineer virtual", "country": ""},  # remote/virtual roles
+    {"base_query": "security engineer virtual", "country": ""},
 ]
 
 
@@ -54,7 +54,7 @@ def fetch(company: Company) -> Iterable[Job]:
                         j.get("description", ""), j.get("basic_qualifications", ""),
                         j.get("preferred_qualifications", ""),
                     ])),
-                    posted_at=(j.get("posted_date") or "")[:12],
+                    posted_at=(j.get("posted_date") or "").strip(),
                     department=j.get("business_category", "") or "",
                     remote="virtual" in loc.lower() or "remote" in loc.lower(),
                     source_id=jid,

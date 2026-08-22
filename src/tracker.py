@@ -42,7 +42,7 @@ SHEET = "Tracker"
 SUMMARY = "Summary"
 HEADERS = ["Job ID", "Date Found", "Company", "Position", "Location",
            "Experience", "Matched Keywords", "Applied?", "Applied Date", "Notes", "Link"]
-COL = {h: i + 1 for i, h in enumerate(HEADERS)}   # 1-based
+COL = {h: i + 1 for i, h in enumerate(HEADERS)}
 MAX_ROWS_VALIDATION = 10000
 
 HEADER_FILL = PatternFill("solid", start_color="1F4E5F")
@@ -213,6 +213,6 @@ def update_tracker(path: str | Path, new_jobs: list[Job]) -> int:
         added += 1
 
     if added or not path.exists():
-        _write(path, fresh + rows)   # newest on top; user edits preserved
+        _write(path, fresh + rows)
         log.info("Tracker updated: +%d new, %d total rows.", added, len(fresh) + len(rows))
     return added

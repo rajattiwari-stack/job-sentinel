@@ -1,6 +1,6 @@
 # Job Sentinel 🛡️
 
-A zero-cost, production-grade job-hunting agent. Runs **4× daily** (10:00 / 14:00 / 18:00 / 22:00 IST) on GitHub Actions, scans 300+ security & big-tech job boards, filters for **cybersecurity roles** (ZIA, ZPA, Zscaler, Avalor, EDR, SASE, network security, …) with **0–2 years** experience located in **India (any mode)** or **remote-open-to-India/worldwide**, and pushes every *new* job — with its direct apply link — to your **Telegram** the moment it appears.
+A zero-cost, production-grade job-hunting agent. Runs **4× daily** (10:00 / 14:00 / 18:00 / 22:00 IST) on GitHub Actions, scans 300+ security & big-tech job boards, filters for **cybersecurity roles** (ZIA, ZPA, Zscaler, Avalor, EDR, SASE, network security, …) with **0–3 years** experience located in **India (any mode)** or **remote-open-to-India/worldwide**, and pushes every *new* job — with its direct apply link — to your **Telegram** the moment it appears.
 
 **Cost: ₹0. Forever.** No servers, no credit card. GitHub Actions is free on public repos, Telegram bots are free.
 
@@ -192,7 +192,7 @@ title is disqualifying, at 5+ it is the target.
 | Telegram outage | Jobs are marked "seen" **only after** delivery succeeds → automatic retry next run (at-least-once delivery) |
 | Telegram 4096-char limit | Messages chunked on job boundaries; titles HTML-escaped |
 | "Remote (US only)" traps | **Allowlist, not blocklist.** A remote posting qualifies only if its location says India, says global, or says nothing specific. Rejecting known-bad regions fails open — `Palo Alto`, `Seattle`, `Foster City, CA`, `Helsinki, Finland` name no country, state, or "US", and all sailed through. Enumerating every city on earth is not a strategy |
-| "8+ years" senior roles | Experience parser reads ranges, "X+", "minimum of X", takes the smallest stated requirement, keeps ≤2 |
+| "8+ years" senior roles | Experience parser reads ranges, "X+", "minimum of X", takes the smallest stated requirement, keeps ≤3 |
 | Senior roles that state no years | Title veto (`exclude_titles`): Senior/Staff/Principal/Lead/Manager/Architect/… are dropped outright. The experience parser only sees numbers a posting bothered to write down; plenty of senior posts write none |
 | A low number hiding in a senior post | Kept (never silently dropped) but the alert is tagged — `min 2 yrs (also asks 8 — verify)` |
 | Unstated experience | Kept, tagged `unspecified`; senior-sounding titles flagged for your review |
@@ -215,31 +215,11 @@ title is disqualifying, at 5+ it is the target.
 
 ---
 
-## Stretch roles & follow-ups
+## Follow-up reminders
 
-Two nudges the raw alert feed can't give you.
-
-**Stretch roles.** At a 0–2 year cap the honest match list is empty for days.
-That isn't the filter misbehaving — early-career security roles in India are
-genuinely scarce — but a silent bot is indistinguishable from a broken one, and
-"needs 3 years" is a number plenty of people get hired past. Roles that clear
-*every* other gate (security title, India/remote, no seniority flag) and miss
-only on years, by at most `stretch_years`, arrive as a separate labelled digest:
-
-```
-📈 Stretch roles — 2 role(s) just past your experience band.
-🏢 Cloudflare — Product Security Engineer
-📍 In-Office, Remote India     ⏳ needs 5+ yrs
-```
-
-**Follow-ups.** Applications die from silence more than from rejection. Any row
-you marked `Applied? = Yes` in `tracker.xlsx` that's been quiet for 10 days gets
-one reminder. Nothing to set up — it reads the tracker you already keep.
-
-Both are rate-limited through `state/run_meta.json` so a 4×-daily bot doesn't
-repeat itself, both de-duplicate so a role still open next week isn't re-sent,
-and neither can delay or suppress a real job alert — they run after delivery,
-each in its own error boundary.
+Applications die from silence more than from rejection. Any row you marked
+`Applied? = Yes` in `tracker.xlsx` that has been quiet for 10 days gets one
+reminder. Nothing to set up — it reads the tracker you already keep.
 
 ## Board identity — the impostor problem
 

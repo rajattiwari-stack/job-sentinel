@@ -19,8 +19,8 @@ _REGISTRY: dict[str, Callable[[Company], Iterable[Job]]] = {
     "ashby": ashby.fetch,
     "smartrecruiters": smartrecruiters.fetch,
     "workday": workday.fetch,
-    "amazon": amazon.fetch,          # custom big-tech ATS
-    "microsoft": microsoft.fetch,    # custom big-tech ATS
+    "amazon": amazon.fetch,
+    "microsoft": microsoft.fetch,
 }
 
 

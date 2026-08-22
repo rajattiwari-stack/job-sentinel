@@ -7,7 +7,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.matcher import MatchConfig, Matcher, experience_check, location_ok  # noqa: E402
+from src.matcher import (MatchConfig, Matcher, build_role_weights,  # noqa: E402
+                         experience_check, location_ok)
 from src.models import Job  # noqa: E402
 
 CFG = MatchConfig(keywords=["ZIA", "ZPA", "EDR", "UVM", "cyber security", "network security",
@@ -18,11 +19,10 @@ def make(title="Security Engineer", loc="Bengaluru, India", desc="EDR experience
     return Job(company="X", title=title, url="https://x/1", location=loc, description=desc)
 
 
-# ---- keyword boundaries: short tokens must not match inside other words ----
 def test_short_keyword_no_substring_match():
     m = Matcher(CFG)
     j = make(title="Frontend Engineer", desc="Work on media redraw pipelines. 2 years experience.")
-    assert m.evaluate(j) is False  # "edr" inside "redraw" must NOT match
+    assert m.evaluate(j) is False
 
 
 def test_short_keyword_real_match():
@@ -52,7 +52,6 @@ def test_hyphen_and_space_variants():
     assert m.evaluate(j) is True
 
 
-# ---- location policy ----
 def test_india_onsite_ok():
     ok, _ = location_ok(make(loc="Pune, Maharashtra, India"))
     assert ok
@@ -73,9 +72,6 @@ def test_remote_emea_rejected():
     assert not ok
 
 
-# The common shapes of a US-locked remote posting. None of these contain the
-# words "US only", which is why they used to sail through to an India-based
-# candidate — the single largest source of noise in the alert feed.
 def test_remote_us_state_rejected():
     for loc in ("Remote - Texas, USA", "Remote, Ohio", "Remote - Illinois, USA",
                 "Remote - US", "Remote (Anywhere in the US)"):
@@ -118,13 +114,11 @@ def test_title_does_not_count_as_a_location():
 
 
 def test_multi_location_including_india_kept():
-    # A job open in several US states AND India is still a real India job.
     ok, _ = location_ok(make(loc="Remote - Illinois, USA; Remote - India"))
     assert ok
 
 
 def test_lowercase_us_in_prose_does_not_lock():
-    # "join us" must not read as the United States.
     ok, _ = location_ok(make(title="Security Engineer - come join us",
                              loc="Bengaluru, India"))
     assert ok
@@ -140,7 +134,6 @@ def test_remote_india_ok():
     assert ok
 
 
-# ---- experience parsing ----
 def test_range():
     ok, note = experience_check(make(desc="Requires 3-5 years of experience in SOC."), 6)
     assert ok and "3" in note
@@ -157,7 +150,6 @@ def test_minimum_phrase():
 
 
 def test_takes_smallest_requirement():
-    # Core req 2 yrs; a nice-to-have mentions 10 yrs — must keep.
     ok, _ = experience_check(make(desc="2+ years required. Bonus: 10+ years leadership."), 6)
     assert ok
 
@@ -172,7 +164,6 @@ def test_garbage_years_ignored():
     assert ok
 
 
-# ---- full pipeline ----
 def test_full_match_pipeline():
     m = Matcher(CFG)
     j = make(title="ZPA Cloud Security Engineer",
@@ -180,7 +171,7 @@ def test_full_match_pipeline():
              desc="<p>Work on <b>ZPA</b> and ZIA. 2 to 4 yrs experience.</p>")
     assert m.evaluate(j) is True
     assert set(j.matched_keywords) >= {"ZPA", "ZIA"}
-    assert j.score >= 4  # title hit boosted
+    assert j.score >= 4
 
 
 def test_no_keywords_dropped():
@@ -189,7 +180,6 @@ def test_no_keywords_dropped():
     assert m.evaluate(j) is False
 
 
-# ---- 0-2 yr targeting: seniority veto + leaky-minimum tagging ----
 JUNIOR = MatchConfig(
     keywords=["EDR", "cloud security", "security engineer"],
     max_experience_years=2,
@@ -199,15 +189,12 @@ JUNIOR = MatchConfig(
 
 
 def test_senior_title_vetoed_even_without_stated_years():
-    # The trap: a senior posting that never states a year count. The experience
-    # parser sees nothing to reject, so only the title can catch it.
     m = Matcher(JUNIOR)
     j = make(title="Senior Security Engineer", desc="Work on EDR. Great team.")
     assert m.evaluate(j) is False
 
 
 def test_excluded_word_needs_word_boundary():
-    # "lead" must not fire inside "leadership"; the job is otherwise valid.
     m = Matcher(JUNIOR)
     j = make(title="Security Engineer", desc="EDR work with leadership exposure. 1-2 years.")
     assert m.evaluate(j) is True
@@ -220,10 +207,6 @@ def test_junior_title_kept():
 
 
 def test_higher_requirement_is_surfaced_in_note():
-    # "Take the smallest stated requirement" gets leaky at a 2-yr cap: this job
-    # is kept on the strength of its 2-yr line. It is NOT dropped (that would
-    # silently lose real matches) but the note must carry the 8-yr ask so a
-    # glance at the Telegram alert is enough to judge it.
     ok, note = experience_check(
         make(desc="2+ years of security experience required. 8+ years preferred."), 2)
     assert ok
@@ -266,7 +249,6 @@ def test_title_match_still_qualifies():
 
 
 def test_department_match_qualifies():
-    # Generic title, but the department places the role in security.
     m = Matcher(JUNIOR)
     j = Job(company="Acme", title="Engineer I", url="https://x/1",
             location="Pune, India", department="Cloud Security",
@@ -299,7 +281,6 @@ def test_freshness_reads_every_ats_date_format():
     assert days_since_posted(with_date("Posted Today")) == 0
     assert days_since_posted(with_date("Posted 3 Days Ago")) == 3
     assert days_since_posted(with_date("Posted 30+ Days Ago")) == 30
-    # Unknown age must not be guessed at.
     assert days_since_posted(with_date("")) is None
     assert days_since_posted(with_date("sometime last spring")) is None
 
@@ -329,3 +310,88 @@ def test_priority_boost_ranks_high_fit_companies():
     hi.priority, lo.priority = "high", "unknown"
     assert m.evaluate(hi) and m.evaluate(lo)
     assert hi.score - lo.score == 6
+
+
+TARGET = MatchConfig(
+    keywords=["security engineer", "vulnerability management", "SOC analyst", "cloud security"],
+    max_experience_years=3,
+    max_posting_age_days=45,
+    exclude_titles=["senior", "sr", "staff", "principal", "lead", "manager", "architect",
+                    "tac", "technical support", "support engineer", "helpdesk", "l1",
+                    "sales", "account executive", "solutions engineer", "multi-lingual"],
+)
+
+
+def test_support_titles_are_vetoed():
+    m = Matcher(TARGET)
+    for title in ("Technical Support Engineer", "TAC Engineer", "Security Support Engineer",
+                  "Helpdesk Analyst", "SOC Analyst L1", "Solutions Engineer - Cloud Security",
+                  "Account Executive - Security", "Multi-lingual ES, Security Operations Center"):
+        j = make(title=title, desc="cloud security. 1-2 years experience.")
+        assert m.evaluate(j) is False, f"{title!r} should be vetoed"
+
+
+def test_core_security_titles_survive_the_support_veto():
+    m = Matcher(TARGET)
+    for title in ("Security Engineer", "Vulnerability Management Analyst", "SOC Analyst II",
+                  "Cloud Security Engineer"):
+        j = make(title=title, desc="1-2 years experience.")
+        assert m.evaluate(j) is True, f"{title!r} should pass"
+
+
+def test_three_year_cap():
+    ok, _ = experience_check(make(desc="3+ years of security experience."), 3)
+    assert ok
+    ok, _ = experience_check(make(desc="4+ years of security experience."), 3)
+    assert not ok
+
+
+def test_stale_postings_are_dropped():
+    from datetime import date, timedelta
+    m = Matcher(TARGET)
+    fresh = make(title="Security Engineer", desc="1-2 years.")
+    fresh.posted_at = (date.today() - timedelta(days=10)).isoformat()
+    stale = make(title="Security Engineer", desc="1-2 years.")
+    stale.posted_at = (date.today() - timedelta(days=200)).isoformat()
+    assert m.evaluate(fresh) is True
+    assert m.evaluate(stale) is False
+
+
+def test_undated_posting_is_not_dropped_as_stale():
+    m = Matcher(TARGET)
+    assert m.evaluate(make(title="Security Engineer", desc="1-2 years.")) is True
+
+
+def test_amazon_month_name_date_is_parsed():
+    from src.matcher import days_since_posted
+    from datetime import date
+    j = make()
+    j.posted_at = "August  4, 2026"
+    age = days_since_posted(j)
+    assert age is not None and age == (date.today() - date(2026, 8, 4)).days
+
+
+def test_role_weight_ranks_career_target_highest():
+    cfg = MatchConfig(
+        keywords=["security engineer", "vulnerability management", "GRC"],
+        max_experience_years=3,
+        role_weights=build_role_weights([
+            {"name": "vuln", "weight": 12, "patterns": ["vulnerability management"]},
+            {"name": "grc", "weight": 3, "patterns": ["GRC"]},
+        ]),
+    )
+    m = Matcher(cfg)
+    vuln = make(title="Vulnerability Management Analyst", desc="1-2 years.")
+    grc = make(title="GRC Analyst", desc="1-2 years.")
+    assert m.evaluate(vuln) and m.evaluate(grc)
+    assert vuln.score > grc.score
+    assert vuln.role_fit == "vuln"
+
+
+def test_amazon_duplicate_requisitions_collapse():
+    from src.models import Job
+    a = Job(company="Amazon", title="Security Operations Center Associate",
+            url="https://x/1", location="Bengaluru", source_id="111")
+    b = Job(company="Amazon", title="Security Operations Center Associate",
+            url="https://x/2", location="Bengaluru", source_id="222")
+    assert a.fingerprint == b.fingerprint
