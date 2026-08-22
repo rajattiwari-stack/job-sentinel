@@ -10,6 +10,12 @@ profiles:
     # Candidate targets EARLY-CAREER roles: 0-2 years.
     max_experience_years: 2
 
+    # Roles that clear every other gate but ask for up to (cap + this) years go
+    # out as a separate, clearly-labelled "stretch" digest instead of being
+    # dropped. At a 2-yr cap the strict match list is empty for days at a time,
+    # and "needs 3 years" is a number plenty of people get hired past.
+    stretch_years: 3
+
     # Titles that disqualify outright. At a 0-2 yr target these matter more than
     # the experience parser: senior postings very often state no year count at
     # all, so the number-based gate lets them through and only the title betrays
@@ -136,5 +142,13 @@ report:
 # splits the roster across consecutive runs: run N scans shard (N mod shards).
 # `shards: 1` disables it entirely and every run scans everything.
 scan:
-  shards: 1
+  # 250 boards is too many for one run: SmartRecruiters detail fetches all
+  # share a single host and serialize behind the politeness delay, so a full
+  # sweep can exceed the Actions timeout — and a run killed by timeout
+  # delivers nothing at all.
+  #
+  # 4 shards x 4 runs/day = every company checked once a day, each run short.
+  # Drop to 2 for twice-daily coverage if runs finish comfortably; 1 disables
+  # sharding entirely.
+  shards: 4
   max_workers: 12

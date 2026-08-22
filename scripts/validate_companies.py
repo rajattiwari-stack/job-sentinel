@@ -31,6 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.adapters import fetch_jobs          # noqa: E402
 from src.main import load_companies          # noqa: E402
+from src.discovery import board_identity, identity_matches  # noqa: E402
 from src.models import Company               # noqa: E402
 
 
@@ -41,10 +42,30 @@ def check(company: Company) -> tuple[Company, int, str]:
         return company, -1, str(e)[:90]
 
 
+def check_identity(company: Company) -> tuple[Company, str] | None:
+    """Flag a board that belongs to somebody else.
+
+    Slug guessing produces confident nonsense: `css` is CloudKitchens, not CSS
+    Corp; `ultimate` is Ultimate Heating & Air, not UKG; `linkedin` is a test
+    board. Each serves real jobs — just the wrong company's — so no error ever
+    fires and the postings look plausible in the feed.
+
+    Reported, never auto-removed: a legitimate rebrand ("Abnormal Security" ->
+    "Abnormal") is indistinguishable from an impostor by string comparison
+    alone, and deleting a real board is worse than printing a line to check.
+    """
+    board = board_identity(company.ats, company.slug)
+    if board and not identity_matches(company.name, board):
+        return company, board
+    return None
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--quiet", action="store_true", help="Only print problems")
     ap.add_argument("--workers", type=int, default=8)
+    ap.add_argument("--identity", action="store_true",
+                    help="Also check each board belongs to the company it claims")
     args = ap.parse_args()
 
     logging.disable(logging.WARNING)          # adapter retry chatter drowns the report

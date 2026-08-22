@@ -1,244 +1,1056 @@
-# Company registry. Adding a company = adding an entry here. No code changes.
+# Company registry — the set of boards scanned every run.
 #
-# ats: greenhouse | lever | ashby | smartrecruiters | workday
-# slug: the ATS board token — find it in the careers-page URL:
-#   greenhouse:      boards.greenhouse.io/<slug>          or job-boards.greenhouse.io/<slug>
-#   lever:           jobs.lever.co/<slug>
-#   ashby:           jobs.ashbyhq.com/<slug>
-#   smartrecruiters: careers.smartrecruiters.com/<slug>   or jobs.smartrecruiters.com/<slug>
-#   workday:         <host>/<path>/...  e.g. https://crowdstrike.wd5.myworkdayjobs.com/crowdstrikecareers
+# Curated entries were verified by hand; the rest were resolved by
+# scripts/discover_ats.py, which only accepts a board after its ATS API
+# answers with a well-formed, NON-EMPTY response. Regenerate with:
 #
-# Run `python scripts/validate_companies.py` after editing — it pings every
-# endpoint and tells you which slugs are wrong BEFORE you rely on them.
-# Set enabled: false to pause a company without deleting it.
+#   python scripts/discover_ats.py --input <list>.json --out discovered.yaml
+#   python scripts/merge_companies.py --curated config/companies.yaml \
+#       --discovered discovered.yaml --out config/companies.yaml
+#
+# `priority` (high|medium|low|unknown) ranks alerts — it never filters.
+# Set `enabled: false` to pause a company without deleting it.
+#
+# Run scripts/validate_companies.py after editing: it flags both broken
+# slugs AND boards that answer 200 with zero jobs (the silent killer).
 
 companies:
-  # ---- Security vendors (highest keyword density: ZIA/ZPA/EDR/SASE etc.) ----
-  # Zscaler moved off SmartRecruiters. The old entry returned HTTP 200 with
-  # zero postings on every run — no error, no alert, just silence from the
-  # single most relevant employer on the list.
-  - name: Zscaler
-    ats: greenhouse
-    slug: zscaler
-    priority: high
-  - name: CrowdStrike
+
+  # ---- priority: high ----
+  - name: "Palo Alto Networks"
     ats: workday
-    slug: crowdstrike
-    workday_host: crowdstrike.wd5.myworkdayjobs.com
-    workday_path: crowdstrikecareers
-  # Same silent failure as Zscaler: migrated to Workday, old board serves 0.
-  - name: Palo Alto Networks
-    ats: workday
-    slug: paloaltonetworks
+    slug: "paloaltonetworks"
     workday_host: paloaltonetworks.wd5.myworkdayjobs.com
     workday_path: panwexternalcareers
     priority: high
-  - name: SentinelOne
+  - name: "Zscaler"
     ats: greenhouse
-    slug: sentinellabs
-  - name: Cloudflare
-    ats: greenhouse
-    slug: cloudflare
-  - name: Rubrik
-    ats: greenhouse
-    slug: rubrik
-  - name: Netskope
-    ats: greenhouse
-    slug: netskope
-  - name: Wiz
-    ats: greenhouse
-    slug: wizinc
-  - name: Snyk
-    ats: greenhouse
-    slug: snyk
-  - name: Tenable
-    ats: workday
-    slug: tenable
-    workday_host: tenable.wd1.myworkdayjobs.com
-    workday_path: tenable
-  - name: Qualys
-    ats: workday
-    slug: qualys
-    workday_host: qualys.wd5.myworkdayjobs.com
-    workday_path: Careers
-  - name: Fortinet
-    ats: workday
-    slug: fortinet
-    workday_host: fortinet.wd1.myworkdayjobs.com
-    workday_path: FortinetCareers
-  - name: Arctic Wolf
-    ats: greenhouse
-    slug: arcticwolfnetworks
-  - name: Abnormal Security
-    ats: greenhouse
-    slug: abnormalsecurity
-  - name: Vectra AI
-    ats: greenhouse
-    slug: vectranetworks
+    slug: "zscaler"
+    priority: high
 
-  # ---- Big tech with strong India security orgs ----
-  - name: Okta
+  # ---- priority: medium ----
+  - name: "Airtable"
     ats: greenhouse
-    slug: okta
-  - name: Databricks
+    slug: "airtable"
+    priority: medium
+  - name: "Amplitude"
     ats: greenhouse
-    slug: databricks
-  - name: Stripe
+    slug: "amplitude"
+    priority: medium
+  - name: "Anaplan"
     ats: greenhouse
-    slug: stripe
-  - name: Elastic
+    slug: "anaplan"
+    priority: medium
+  - name: "Apiiro"
     ats: greenhouse
-    slug: elastic
-  - name: Datadog
-    ats: greenhouse
-    slug: datadog
-  - name: MongoDB
-    ats: greenhouse
-    slug: mongodb
-  - name: Atlassian
-    ats: lever
-    slug: atlassian
-  - name: Nutanix
-    ats: lever
-    slug: nutanix
-  - name: HashiCorp
-    ats: greenhouse
-    slug: hashicorp
-  - name: GitLab
-    ats: greenhouse
-    slug: gitlab
-  - name: Twilio
-    ats: greenhouse
-    slug: twilio
-  - name: Coinbase
-    ats: greenhouse
-    slug: coinbase
-  - name: Rippling
-    ats: greenhouse
-    slug: rippling
-  - name: Notion
-    ats: ashby
-    slug: notion
-  - name: Ramp
-    ats: ashby
-    slug: ramp
-  - name: OpenAI
-    ats: ashby
-    slug: openai
-
-  # ---- Big tech with custom ATS (dedicated adapters, no slug needed) ----
-  - name: Amazon
-    ats: amazon
-    slug: amazon
-  - name: Microsoft
-    ats: microsoft
-    slug: microsoft
-
-  # ---- More security vendors ----
-  - name: Proofpoint
-    ats: workday
-    slug: proofpoint
-    workday_host: proofpoint.wd5.myworkdayjobs.com
-    workday_path: ProofpointCareers
-  - name: Trellix
-    ats: workday
-    slug: trellix
-    workday_host: trellix.wd1.myworkdayjobs.com
-    workday_path: External
-  - name: Trend Micro
-    ats: workday
-    slug: trendmicro
-    workday_host: trendmicro.wd3.myworkdayjobs.com
-    workday_path: External
-  - name: F5
-    ats: workday
-    slug: f5
-    workday_host: ffive.wd1.myworkdayjobs.com
-    workday_path: f5jobs
-  - name: Akamai
-    ats: workday
-    slug: akamai
-    workday_host: akamai.wd1.myworkdayjobs.com
-    workday_path: External
-  - name: Splunk (Cisco)
-    ats: workday
-    slug: splunk
-    workday_host: splunk.wd1.myworkdayjobs.com
-    workday_path: Splunk
-  - name: Illumio
-    ats: greenhouse
-    slug: illumio
-  - name: Lacework (Fortinet)
-    ats: greenhouse
-    slug: lacework
-    enabled: false          # verify post-acquisition board status with validator
-  - name: Huntress
-    ats: greenhouse
-    slug: huntress
-  - name: Semgrep
-    ats: greenhouse
-    slug: semgrep
-  - name: Chainguard
-    ats: greenhouse
-    slug: chainguard
-  - name: Tailscale
-    ats: greenhouse
-    slug: tailscale
-  - name: 1Password
-    ats: lever
-    slug: 1password
-  - name: Bitwarden
-    ats: greenhouse
-    slug: bitwarden
-
-  # ---- Enterprise / India-heavy employers ----
-  - name: ServiceNow
+    slug: "apiiro"
+    priority: medium
+  - name: "Armis"
     ats: smartrecruiters
-    slug: ServiceNow
-  - name: Salesforce
+    slug: "armis"
+    priority: medium
+  - name: "Asana"
+    ats: greenhouse
+    slug: "asana"
+    priority: medium
+  - name: "Aviatrix"
+    ats: greenhouse
+    slug: "aviatrix"
+    priority: medium
+  - name: "Axonius"
+    ats: greenhouse
+    slug: "axonius"
+    priority: medium
+  - name: "Balbix"
+    ats: lever
+    slug: "balbix"
+    priority: medium
+  - name: "BeyondTrust"
+    ats: greenhouse
+    slug: "beyondtrust"
+    priority: medium
+  - name: "BigID"
+    ats: greenhouse
+    slug: "bigid"
+    priority: medium
+  - name: "Binance"
+    ats: lever
+    slug: "binance"
+    priority: medium
+  - name: "Bishop Fox"
+    ats: greenhouse
+    slug: "bishopfox"
+    priority: medium
+  - name: "Braze"
+    ats: greenhouse
+    slug: "braze"
+    priority: medium
+  - name: "Brinqa"
+    ats: greenhouse
+    slug: "brinqa"
+    priority: medium
+  - name: "Bugcrowd"
+    ats: greenhouse
+    slug: "bugcrowd"
+    priority: medium
+  - name: "Canonical (Ubuntu)"
+    ats: greenhouse
+    slug: "canonical"
+    priority: medium
+  - name: "Cars24"
+    ats: smartrecruiters
+    slug: "cars24"
+    priority: medium
+  - name: "Censys"
+    ats: greenhouse
+    slug: "censys"
+    priority: medium
+  - name: "CertiK"
+    ats: lever
+    slug: "certik"
+    priority: medium
+  - name: "CircleCI"
+    ats: greenhouse
+    slug: "circleci"
+    priority: medium
+  - name: "CloudSEK"
+    ats: greenhouse
+    slug: "cloudsek"
+    priority: medium
+  - name: "Coalfire Systems"
+    ats: lever
+    slug: "coalfire"
+    priority: medium
+  - name: "Cobalt.io"
+    ats: greenhouse
+    slug: "cobaltio"
+    priority: medium
+  - name: "Commvault"
+    ats: greenhouse
+    slug: "commvault"
+    priority: medium
+  - name: "Concentric AI"
+    ats: greenhouse
+    slug: "concentric"
+    priority: medium
+  - name: "Corelight"
+    ats: greenhouse
+    slug: "corelight"
+    priority: medium
+  - name: "Coupa Software"
+    ats: lever
+    slug: "coupa"
+    priority: medium
+  - name: "Coursera"
+    ats: greenhouse
+    slug: "coursera"
+    priority: medium
+  - name: "Cribl"
+    ats: greenhouse
+    slug: "cribl"
+    priority: medium
+  - name: "Cybereason"
+    ats: greenhouse
+    slug: "cybereason"
+    priority: medium
+  - name: "Cyderes"
+    ats: lever
+    slug: "cyderes"
+    priority: medium
+  - name: "Cymulate"
+    ats: greenhouse
+    slug: "cymulate"
+    priority: medium
+  - name: "Cyware"
+    ats: greenhouse
+    slug: "cyware"
+    priority: medium
+  - name: "Dashlane"
+    ats: greenhouse
+    slug: "dashlane"
+    priority: medium
+  - name: "DataGrail"
+    ats: greenhouse
+    slug: "datagrail"
+    priority: medium
+  - name: "DigiCert"
+    ats: greenhouse
+    slug: "digicert"
+    priority: medium
+  - name: "Dragos"
+    ats: greenhouse
+    slug: "dragos"
+    priority: medium
+  - name: "Dropzone AI"
+    ats: greenhouse
+    slug: "dropzoneai"
+    priority: medium
+  - name: "Druva"
+    ats: greenhouse
+    slug: "druva"
+    priority: medium
+  - name: "Expel"
+    ats: greenhouse
+    slug: "expel"
+    priority: medium
+  - name: "Fidelis Cybersecurity"
+    ats: smartrecruiters
+    slug: "fideliscybersecurity"
+    priority: medium
+  - name: "Figma"
+    ats: greenhouse
+    slug: "figma"
+    priority: medium
+  - name: "Fireblocks"
+    ats: greenhouse
+    slug: "fireblocks"
+    priority: medium
+  - name: "Fivetran"
+    ats: greenhouse
+    slug: "fivetran"
+    priority: medium
+  - name: "Glean"
+    ats: smartrecruiters
+    slug: "glean"
+    priority: medium
+  - name: "Grafana Labs"
+    ats: greenhouse
+    slug: "grafanalabs"
+    priority: medium
+  - name: "GreyNoise Intelligence"
+    ats: greenhouse
+    slug: "greynoiseintelligence"
+    priority: medium
+  - name: "Gusto"
+    ats: greenhouse
+    slug: "gusto"
+    priority: medium
+  - name: "HiBob"
+    ats: smartrecruiters
+    slug: "hibob"
+    priority: medium
+  - name: "Hightouch"
+    ats: greenhouse
+    slug: "hightouch"
+    priority: medium
+  - name: "Hyperproof"
+    ats: greenhouse
+    slug: "hyperproof"
+    priority: medium
+  - name: "IDfy (Innodata)"
+    ats: lever
+    slug: "innodata"
+    priority: medium
+  - name: "Immersive Labs"
+    ats: greenhouse
+    slug: "immersive"
+    priority: medium
+  - name: "Immunefi"
+    ats: greenhouse
+    slug: "immunefi"
+    priority: medium
+  - name: "InMobi"
+    ats: greenhouse
+    slug: "inmobi"
+    priority: medium
+  - name: "Intercom"
+    ats: greenhouse
+    slug: "intercom"
+    priority: medium
+  - name: "JFrog"
+    ats: greenhouse
+    slug: "jfrog"
+    priority: medium
+  - name: "JumpCloud"
+    ats: lever
+    slug: "jumpcloud"
+    priority: medium
+  - name: "Justworks"
+    ats: greenhouse
+    slug: "justworks"
+    priority: medium
+  - name: "Keeper Security"
+    ats: greenhouse
+    slug: "keepersecurity"
+    priority: medium
+  - name: "Kellton Tech"
+    ats: smartrecruiters
+    slug: "kelltontech"
+    priority: medium
+  - name: "KnowBe4"
+    ats: greenhouse
+    slug: "knowbe4"
+    priority: medium
+  - name: "Merkle Science"
+    ats: lever
+    slug: "merklescience"
+    priority: medium
+  - name: "MinIO"
+    ats: greenhouse
+    slug: "minio"
+    priority: medium
+  - name: "Narayana Health"
+    ats: smartrecruiters
+    slug: "narayanahealth"
+    priority: medium
+  - name: "New Relic"
+    ats: greenhouse
+    slug: "newrelic"
+    priority: medium
+  - name: "Nium"
+    ats: lever
+    slug: "nium"
+    priority: medium
+  - name: "NoBroker"
+    ats: smartrecruiters
+    slug: "nobroker"
+    priority: medium
+  - name: "Nozomi Networks"
+    ats: greenhouse
+    slug: "nozominetworks"
+    priority: medium
+  - name: "Observe.AI"
+    ats: greenhouse
+    slug: "observeai"
+    priority: medium
+  - name: "Oliver Wyman"
+    ats: lever
+    slug: "oliverwyman"
+    priority: medium
+  - name: "OpenZeppelin"
+    ats: greenhouse
+    slug: "openzeppelin"
+    priority: medium
+  - name: "Orca Security"
+    ats: greenhouse
+    slug: "orcasecurity"
+    priority: medium
+  - name: "PagerDuty"
+    ats: greenhouse
+    slug: "pagerduty"
+    priority: medium
+  - name: "Paytm"
+    ats: lever
+    slug: "paytm"
+    priority: medium
+  - name: "PhonePe"
+    ats: greenhouse
+    slug: "phonepe"
+    priority: medium
+  - name: "Ping Identity (incl. ForgeRock)"
+    ats: greenhouse
+    slug: "pingidentity"
+    priority: medium
+  - name: "Praetorian"
+    ats: greenhouse
+    slug: "praetorian"
+    priority: medium
+  - name: "Proton"
+    ats: greenhouse
+    slug: "proton"
+    priority: medium
+  - name: "Recorded Future"
+    ats: greenhouse
+    slug: "recordedfuture"
+    priority: medium
+  - name: "Remote.com"
+    ats: greenhouse
+    slug: "remotecom"
+    priority: medium
+  - name: "runZero"
+    ats: greenhouse
+    slug: "runzero"
+    priority: medium
+  - name: "Sacumen"
+    ats: smartrecruiters
+    slug: "sacumen"
+    priority: medium
+  - name: "Safe Security (formerly Lucideus)"
+    ats: lever
+    slug: "safe"
+    priority: medium
+  - name: "SafeBreach"
+    ats: greenhouse
+    slug: "safebreach"
+    priority: medium
+  - name: "Salt Security"
+    ats: greenhouse
+    slug: "saltsecurity"
+    priority: medium
+  - name: "Saviynt"
+    ats: lever
+    slug: "saviynt"
+    priority: medium
+  - name: "Scale AI"
+    ats: greenhouse
+    slug: "scaleai"
+    priority: medium
+  - name: "Scality"
+    ats: lever
+    slug: "scality"
+    priority: medium
+  - name: "Secureframe"
+    ats: lever
+    slug: "secureframe"
+    priority: medium
+  - name: "SISA Information Security"
+    ats: smartrecruiters
+    slug: "sisainformationsecurity"
+    priority: medium
+  - name: "Slice (Fintech)"
+    ats: greenhouse
+    slug: "slice"
+    priority: medium
+  - name: "Socket Security"
+    ats: greenhouse
+    slug: "socket"
+    priority: medium
+  - name: "Sonatype"
+    ats: lever
+    slug: "sonatype"
+    priority: medium
+  - name: "Sprocket Security"
+    ats: greenhouse
+    slug: "sprocketsecurity"
+    priority: medium
+  - name: "Star Health Insurance"
+    ats: smartrecruiters
+    slug: "starhealthinsurance"
+    priority: medium
+  - name: "Sumo Logic"
+    ats: greenhouse
+    slug: "sumologic"
+    priority: medium
+  - name: "Swiggy"
+    ats: smartrecruiters
+    slug: "swiggy"
+    priority: medium
+  - name: "Synack"
+    ats: greenhouse
+    slug: "synack"
+    priority: medium
+  - name: "Tanium"
+    ats: greenhouse
+    slug: "tanium"
+    priority: medium
+  - name: "Thales"
+    ats: smartrecruiters
+    slug: "thales"
+    priority: medium
+  - name: "Thoropass"
+    ats: greenhouse
+    slug: "thoropass"
+    priority: medium
+  - name: "ThreatLocker"
+    ats: greenhouse
+    slug: "threatlocker"
+    priority: medium
+  - name: "Together AI"
+    ats: greenhouse
+    slug: "togetherai"
+    priority: medium
+  - name: "Toptal"
+    ats: lever
+    slug: "toptal"
+    priority: medium
+  - name: "Torq"
+    ats: greenhouse
+    slug: "torq"
+    priority: medium
+  - name: "Turtlemint"
+    ats: smartrecruiters
+    slug: "turtlemint"
+    priority: medium
+  - name: "Twingate"
+    ats: lever
+    slug: "twingate"
+    priority: medium
+  - name: "Upstox"
+    ats: smartrecruiters
+    slug: "upstox"
+    priority: medium
+  - name: "Veeva Systems"
+    ats: lever
+    slug: "veeva"
+    priority: medium
+  - name: "Veracode"
+    ats: greenhouse
+    slug: "veracode"
+    priority: medium
+  - name: "Vercel"
+    ats: greenhouse
+    slug: "vercel"
+    priority: medium
+  - name: "WatchGuard Technologies"
+    ats: lever
+    slug: "watchguard"
+    priority: medium
+  - name: "Wealthdesk"
+    ats: smartrecruiters
+    slug: "wealthdesk"
+    priority: medium
+  - name: "Workato"
+    ats: greenhouse
+    slug: "workato"
+    priority: medium
+
+  # ---- priority: low ----
+  - name: "AbbVie"
+    ats: smartrecruiters
+    slug: "abbvie"
+    priority: low
+  - name: "Adyen"
+    ats: greenhouse
+    slug: "adyen"
+    priority: low
+  - name: "Brex"
+    ats: greenhouse
+    slug: "brex"
+    priority: low
+  - name: "Britive"
+    ats: greenhouse
+    slug: "britive"
+    priority: low
+  - name: "Cato Networks"
+    ats: greenhouse
+    slug: "catonetworks"
+    priority: low
+  - name: "Descope"
+    ats: greenhouse
+    slug: "descope"
+    priority: low
+  - name: "Diligent"
+    ats: greenhouse
+    slug: "diligent"
+    priority: low
+  - name: "Fastly"
+    ats: greenhouse
+    slug: "fastly"
+    priority: low
+  - name: "GoDaddy"
+    ats: greenhouse
+    slug: "godaddy"
+    priority: low
+  - name: "Hex Technologies"
+    ats: greenhouse
+    slug: "hextechnologies"
+    priority: low
+  - name: "ION Group"
+    ats: lever
+    slug: "ion"
+    priority: low
+  - name: "Lendingkart"
+    ats: smartrecruiters
+    slug: "lendingkart"
+    priority: low
+  - name: "LogicGate"
+    ats: greenhouse
+    slug: "logicgate"
+    priority: low
+  - name: "Lyra Health"
+    ats: lever
+    slug: "lyrahealth"
+    priority: low
+  - name: "Neon Database"
+    ats: lever
+    slug: "neon"
+    priority: low
+  - name: "Netlify"
+    ats: greenhouse
+    slug: "netlify"
+    priority: low
+  - name: "NS1 (IBM)"
+    ats: smartrecruiters
+    slug: "ns1"
+    priority: low
+  - name: "OneTrust"
+    ats: greenhouse
+    slug: "onetrust"
+    priority: low
+  - name: "OPSWAT"
+    ats: greenhouse
+    slug: "opswat"
+    priority: low
+  - name: "PlanetScale"
+    ats: greenhouse
+    slug: "planetscale"
+    priority: low
+  - name: "Suki AI"
+    ats: greenhouse
+    slug: "suki"
+    priority: low
+  - name: "Sysdig"
+    ats: lever
+    slug: "sysdig"
+    priority: low
+  - name: "TrustArc"
+    ats: lever
+    slug: "trustarc"
+    priority: low
+  - name: "Turing.com"
+    ats: greenhouse
+    slug: "turing"
+    priority: low
+  - name: "VAST Data"
+    ats: greenhouse
+    slug: "vast"
+    priority: low
+  - name: "Veeam Software"
+    ats: greenhouse
+    slug: "veeamsoftware"
+    priority: low
+  - name: "Whatfix"
+    ats: smartrecruiters
+    slug: "whatfix"
+    priority: low
+  - name: "Zuora"
+    ats: greenhouse
+    slug: "zuora"
+    priority: low
+
+  # ---- priority: unknown ----
+  - name: "1Password"
+    ats: lever
+    slug: "1password"
+    priority: unknown
+  - name: "Abnormal Security"
+    ats: greenhouse
+    slug: "abnormalsecurity"
+    priority: unknown
+  - name: "Adobe"
     ats: workday
-    slug: salesforce
-    workday_host: salesforce.wd12.myworkdayjobs.com
-    workday_path: External_Career_Site
-  - name: Adobe
-    ats: workday
-    slug: adobe
+    slug: "adobe"
     workday_host: adobe.wd5.myworkdayjobs.com
     workday_path: external_experienced
-  - name: VMware (Broadcom)
+    priority: unknown
+  - name: "Affle"
+    ats: greenhouse
+    slug: "affle"
+    priority: unknown
+  - name: "Agoda India"
+    ats: greenhouse
+    slug: "agoda"
+    priority: unknown
+  - name: "Airbnb"
+    ats: greenhouse
+    slug: "airbnb"
+    priority: unknown
+  - name: "Akamai"
     ats: workday
-    slug: broadcom
+    slug: "akamai"
+    workday_host: akamai.wd1.myworkdayjobs.com
+    workday_path: External
+    priority: unknown
+  - name: "Alten India"
+    ats: smartrecruiters
+    slug: "alten"
+    priority: unknown
+  - name: "Amazon"
+    ats: amazon
+    slug: "amazon"
+    priority: unknown
+  - name: "Anthropic (India-facing roles)"
+    ats: greenhouse
+    slug: "anthropic"
+    priority: unknown
+  - name: "Arctic Wolf"
+    ats: greenhouse
+    slug: "arcticwolfnetworks"
+    priority: unknown
+  - name: "AssemblyAI"
+    ats: greenhouse
+    slug: "assemblyai"
+    priority: unknown
+  - name: "Atlassian"
+    ats: lever
+    slug: "atlassian"
+    priority: unknown
+  - name: "Bitwarden"
+    ats: greenhouse
+    slug: "bitwarden"
+    priority: unknown
+  - name: "Browserstack"
+    ats: greenhouse
+    slug: "browserstack"
+    priority: unknown
+  - name: "Buildkite"
+    ats: greenhouse
+    slug: "buildkite"
+    priority: unknown
+  - name: "Calendly"
+    ats: greenhouse
+    slug: "calendly"
+    priority: unknown
+  - name: "Canva"
+    ats: smartrecruiters
+    slug: "canva"
+    priority: unknown
+  - name: "Chainguard"
+    ats: greenhouse
+    slug: "chainguard"
+    priority: unknown
+  - name: "Chargebee"
+    ats: greenhouse
+    slug: "chargebee"
+    priority: unknown
+  - name: "Cloudflare"
+    ats: greenhouse
+    slug: "cloudflare"
+    priority: unknown
+  - name: "Coinbase"
+    ats: greenhouse
+    slug: "coinbase"
+    priority: unknown
+  - name: "Continental India"
+    ats: smartrecruiters
+    slug: "continental"
+    priority: unknown
+  - name: "CRED"
+    ats: lever
+    slug: "cred"
+    priority: unknown
+  - name: "CrowdStrike"
+    ats: workday
+    slug: "crowdstrike"
+    workday_host: crowdstrike.wd5.myworkdayjobs.com
+    workday_path: crowdstrikecareers
+    priority: unknown
+  - name: "Databricks"
+    ats: greenhouse
+    slug: "databricks"
+    priority: unknown
+  - name: "Datadog"
+    ats: greenhouse
+    slug: "datadog"
+    priority: unknown
+  - name: "Drift (Salesloft)"
+    ats: greenhouse
+    slug: "salesloft"
+    priority: unknown
+  - name: "Dropbox India"
+    ats: greenhouse
+    slug: "dropbox"
+    priority: unknown
+  - name: "EDB (EnterpriseDB)"
+    ats: greenhouse
+    slug: "edb"
+    priority: unknown
+  - name: "Elastic"
+    ats: greenhouse
+    slug: "elastic"
+    priority: unknown
+  - name: "Endava India"
+    ats: smartrecruiters
+    slug: "endava"
+    priority: unknown
+  - name: "F5"
+    ats: workday
+    slug: "f5"
+    workday_host: ffive.wd1.myworkdayjobs.com
+    workday_path: f5jobs
+    priority: unknown
+  - name: "Fortinet"
+    ats: workday
+    slug: "fortinet"
+    workday_host: fortinet.wd1.myworkdayjobs.com
+    workday_path: FortinetCareers
+    priority: unknown
+  - name: "Freshworks"
+    ats: smartrecruiters
+    slug: "Freshworks"
+    priority: unknown
+  - name: "Gainsight"
+    ats: smartrecruiters
+    slug: "gainsight"
+    priority: unknown
+  - name: "GitLab"
+    ats: greenhouse
+    slug: "gitlab"
+    priority: unknown
+  - name: "Groww"
+    ats: lever
+    slug: "groww"
+    priority: unknown
+  - name: "HashiCorp"
+    ats: greenhouse
+    slug: "hashicorp"
+    priority: unknown
+  - name: "Honeycomb.io"
+    ats: greenhouse
+    slug: "honeycomb"
+    priority: unknown
+  - name: "Huntress"
+    ats: greenhouse
+    slug: "huntress"
+    priority: unknown
+  - name: "Hyatt Hotels India"
+    ats: smartrecruiters
+    slug: "hyatthotels"
+    priority: unknown
+  - name: "Illumio"
+    ats: greenhouse
+    slug: "illumio"
+    priority: unknown
+  - name: "Instahyre"
+    ats: smartrecruiters
+    slug: "instahyre"
+    priority: unknown
+  - name: "Ixigo"
+    ats: smartrecruiters
+    slug: "ixigo"
+    priority: unknown
+  - name: "JetBrains"
+    ats: greenhouse
+    slug: "jetbrains"
+    priority: unknown
+  - name: "Labelbox"
+    ats: greenhouse
+    slug: "labelbox"
+    priority: unknown
+  - name: "Lacework (Fortinet)"
+    ats: greenhouse
+    slug: "lacework"
+    priority: unknown
+    enabled: false
+  - name: "LaunchDarkly"
+    ats: greenhouse
+    slug: "launchdarkly"
+    priority: unknown
+  - name: "LG Electronics India"
+    ats: greenhouse
+    slug: "lgelectronics"
+    priority: unknown
+  - name: "LogicMonitor"
+    ats: greenhouse
+    slug: "logicmonitor"
+    priority: unknown
+  - name: "LogiNext Solutions"
+    ats: smartrecruiters
+    slug: "loginext"
+    priority: unknown
+  - name: "Media.net"
+    ats: smartrecruiters
+    slug: "medianet"
+    priority: unknown
+  - name: "Meesho"
+    ats: lever
+    slug: "meesho"
+    priority: unknown
+  - name: "Microsoft"
+    ats: microsoft
+    slug: "microsoft"
+    priority: unknown
+  - name: "Mixpanel India"
+    ats: greenhouse
+    slug: "mixpanel"
+    priority: unknown
+  - name: "MongoDB"
+    ats: greenhouse
+    slug: "mongodb"
+    priority: unknown
+  - name: "Netskope"
+    ats: greenhouse
+    slug: "netskope"
+    priority: unknown
+  - name: "Notion"
+    ats: ashby
+    slug: "notion"
+    priority: unknown
+  - name: "Nutanix"
+    ats: lever
+    slug: "nutanix"
+    priority: unknown
+  - name: "Okta"
+    ats: greenhouse
+    slug: "okta"
+    priority: unknown
+  - name: "OpenAI"
+    ats: ashby
+    slug: "openai"
+    priority: unknown
+  - name: "Palantir Technologies"
+    ats: lever
+    slug: "palantir"
+    priority: unknown
+  - name: "Pendo"
+    ats: greenhouse
+    slug: "pendo"
+    priority: unknown
+  - name: "Porter (Locus/Porter)"
+    ats: lever
+    slug: "porter"
+    priority: unknown
+  - name: "Postman"
+    ats: greenhouse
+    slug: "postman"
+    priority: unknown
+  - name: "Proofpoint"
+    ats: workday
+    slug: "proofpoint"
+    workday_host: proofpoint.wd5.myworkdayjobs.com
+    workday_path: ProofpointCareers
+    priority: unknown
+  - name: "Qualys"
+    ats: workday
+    slug: "qualys"
+    workday_host: qualys.wd5.myworkdayjobs.com
+    workday_path: Careers
+    priority: unknown
+  - name: "Ramp"
+    ats: ashby
+    slug: "ramp"
+    priority: unknown
+  - name: "Razorpay"
+    ats: lever
+    slug: "razorpay"
+    priority: unknown
+  - name: "Rebel Foods"
+    ats: smartrecruiters
+    slug: "rebelfoods"
+    priority: unknown
+  - name: "Renesas Electronics India"
+    ats: smartrecruiters
+    slug: "renesaselectronics"
+    priority: unknown
+  - name: "Rippling"
+    ats: greenhouse
+    slug: "rippling"
+    priority: unknown
+  - name: "Rubrik"
+    ats: greenhouse
+    slug: "rubrik"
+    priority: unknown
+  - name: "Salesforce"
+    ats: workday
+    slug: "salesforce"
+    workday_host: salesforce.wd12.myworkdayjobs.com
+    workday_path: External_Career_Site
+    priority: unknown
+  - name: "Semgrep"
+    ats: greenhouse
+    slug: "semgrep"
+    priority: unknown
+  - name: "SentinelOne"
+    ats: greenhouse
+    slug: "sentinellabs"
+    priority: unknown
+  - name: "ServiceNow"
+    ats: smartrecruiters
+    slug: "ServiceNow"
+    priority: unknown
+  - name: "Shipsy"
+    ats: smartrecruiters
+    slug: "shipsy"
+    priority: unknown
+  - name: "SmartBear Software"
+    ats: greenhouse
+    slug: "smartbear"
+    priority: unknown
+  - name: "Snyk"
+    ats: greenhouse
+    slug: "snyk"
+    priority: unknown
+  - name: "Splunk (Cisco)"
+    ats: workday
+    slug: "splunk"
+    workday_host: splunk.wd1.myworkdayjobs.com
+    workday_path: Splunk
+    priority: unknown
+  - name: "Spotify India"
+    ats: lever
+    slug: "spotify"
+    priority: unknown
+  - name: "Stability AI"
+    ats: greenhouse
+    slug: "stabilityai"
+    priority: unknown
+  - name: "Stripe"
+    ats: greenhouse
+    slug: "stripe"
+    priority: unknown
+  - name: "STT GDC India"
+    ats: smartrecruiters
+    slug: "sttgdc"
+    priority: unknown
+  - name: "Tailscale"
+    ats: greenhouse
+    slug: "tailscale"
+    priority: unknown
+  - name: "Tenable"
+    ats: workday
+    slug: "tenable"
+    workday_host: tenable.wd1.myworkdayjobs.com
+    workday_path: tenable
+    priority: unknown
+  - name: "ThoughtWorks"
+    ats: greenhouse
+    slug: "thoughtworks"
+    priority: unknown
+  - name: "Trellix"
+    ats: workday
+    slug: "trellix"
+    workday_host: trellix.wd1.myworkdayjobs.com
+    workday_path: External
+    priority: unknown
+  - name: "Trend Micro"
+    ats: workday
+    slug: "trendmicro"
+    workday_host: trendmicro.wd3.myworkdayjobs.com
+    workday_path: External
+    priority: unknown
+  - name: "Trivago India"
+    ats: greenhouse
+    slug: "trivago"
+    priority: unknown
+  - name: "Twilio"
+    ats: greenhouse
+    slug: "twilio"
+    priority: unknown
+  - name: "Twin Health"
+    ats: greenhouse
+    slug: "twinhealth"
+    priority: unknown
+  - name: "Typeform"
+    ats: greenhouse
+    slug: "typeform"
+    priority: unknown
+  - name: "Uber"
+    ats: smartrecruiters
+    slug: "uber"
+    priority: unknown
+  - name: "Unacademy"
+    ats: smartrecruiters
+    slug: "unacademy"
+    priority: unknown
+  - name: "Vectra AI"
+    ats: greenhouse
+    slug: "vectranetworks"
+    priority: unknown
+  - name: "VMware (Broadcom)"
+    ats: workday
+    slug: "broadcom"
     workday_host: broadcom.wd1.myworkdayjobs.com
     workday_path: External_Career
-  - name: Zoom
+    priority: unknown
+  - name: "Western Digital India"
+    ats: smartrecruiters
+    slug: "westerndigital"
+    priority: unknown
+  - name: "Wiz"
+    ats: greenhouse
+    slug: "wizinc"
+    priority: unknown
+  - name: "Xiaomi Technology India"
+    ats: smartrecruiters
+    slug: "xiaomi"
+    priority: unknown
+  - name: "Zeta"
+    ats: lever
+    slug: "zeta"
+    priority: unknown
+  - name: "Zoom"
     ats: workday
-    slug: zoom
+    slug: "zoom"
     workday_host: zoom.wd5.myworkdayjobs.com
     workday_path: Zoom
-  - name: Freshworks
-    ats: smartrecruiters
-    slug: Freshworks
-  - name: Postman
-    ats: greenhouse
-    slug: postman
-  - name: Razorpay
-    ats: lever
-    slug: razorpay
-  - name: CRED
-    ats: lever
-    slug: cred
-  - name: Groww
-    ats: lever
-    slug: groww
-  - name: Meesho
-    ats: lever
-    slug: meesho
-  - name: Zeta
-    ats: lever
-    slug: zeta
-  - name: Chargebee
-    ats: greenhouse
-    slug: chargebee
-  - name: Browserstack
-    ats: greenhouse
-    slug: browserstack
+    priority: unknown

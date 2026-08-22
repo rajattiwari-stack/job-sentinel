@@ -176,6 +176,69 @@ def probe_careers_page(url: str) -> Optional[dict]:
     return None
 
 
+def board_identity(ats: str, slug: str) -> Optional[str]:
+    """The company name the BOARD claims, where the ATS will tell us.
+
+    Slug guessing produces confident-looking nonsense: "CSS Corp" guesses `css`,
+    which on Greenhouse is CloudKitchens, and "Carbon Black" guesses `carbon`,
+    which is Carbon, Inc. Both return healthy boards full of real jobs — they
+    are just somebody else's jobs, filed under your company's name.
+
+    Greenhouse and SmartRecruiters both publish the board owner, which settles
+    it. Lever and Ashby don't, so those stay unverified rather than guessed at.
+    """
+    try:
+        if ats == "greenhouse":
+            _wait("boards-api.greenhouse.io")
+            r = requests.get(f"https://boards-api.greenhouse.io/v1/boards/{slug}",
+                             headers={"User-Agent": UA}, timeout=TIMEOUT)
+            return r.json().get("name") if r.status_code == 200 else None
+        if ats == "smartrecruiters":
+            _wait("api.smartrecruiters.com")
+            r = requests.get(f"https://api.smartrecruiters.com/v1/companies/{slug}/postings",
+                             params={"limit": 1}, headers={"User-Agent": UA}, timeout=TIMEOUT)
+            if r.status_code != 200:
+                return None
+            content = r.json().get("content") or [{}]
+            return (content[0].get("company") or {}).get("name")
+    except Exception:                        # noqa: BLE001 — verification is best-effort
+        return None
+    return None
+
+
+# Boards routinely title themselves "Acme Job Board" or just "Careers". Those
+# words carry no identity and would otherwise sink a correct match on length.
+_BOARD_NOISE = re.compile(r"\b(job\s*board|jobs?|careers?|board|hiring|opportunities)\b",
+                          re.IGNORECASE)
+
+
+def _strip_to_core(name: str) -> str:
+    """Company name reduced to its distinctive part, for comparison only."""
+    base = re.sub(r"\([^)]*\)", " ", name)
+    base = _BOARD_NOISE.sub(" ", base)
+    base = _SUFFIXES.sub(" ", base)
+    return re.sub(r"[^a-z0-9]", "", base.lower())
+
+
+def identity_matches(company_name: str, board_name: str, threshold: float = 0.6) -> bool:
+    """Does a board's declared owner plausibly match the company we wanted?
+
+    Containment alone is too generous: "Carbon" sits inside "Carbon Black", so
+    Carbon, Inc.'s board would pass as Carbon Black's. Requiring the shorter
+    name to account for most of the longer one rejects that while still
+    accepting "Dropbox" for "Dropbox India".
+    """
+    a, b = _strip_to_core(company_name), _strip_to_core(board_name)
+    if not a or not b:
+        return True                          # nothing to judge on — don't punish
+    if a == b:
+        return True
+    short, long = sorted((a, b), key=len)
+    if short in long:
+        return len(short) / len(long) >= threshold
+    return False
+
+
 def find_board(name: str, careers_url: str = "", full_sweep: bool = True) -> Optional[dict]:
     """Find a live board for one company name. Returns None if nothing resolves.
 

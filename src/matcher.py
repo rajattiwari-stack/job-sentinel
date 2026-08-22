@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import html
 import re
+import threading
 from dataclasses import dataclass, field
 
 from .models import Job
@@ -173,6 +174,7 @@ class MatchConfig:
     exclude_titles: list[str] = field(default_factory=list)
     priority_boost: dict[str, int] = field(default_factory=dict)
     require_role_match: bool = True   # keyword must hit the title/department
+    stretch_years: int = 3            # how far past the cap still counts as reachable
 
 
 def build_exclude_pattern(words: list[str]) -> re.Pattern | None:
@@ -197,11 +199,21 @@ def clean_text(raw: str) -> str:
     return re.sub(r"\s+", " ", txt).strip()
 
 
+_YEARS_IN_NOTE = re.compile(r"needs (\d{1,2})\+ yrs")
+
+
 class Matcher:
     def __init__(self, cfg: MatchConfig):
         self.cfg = cfg
         self.patterns = build_keyword_patterns(cfg.keywords)
         self.exclude = build_exclude_pattern(cfg.exclude_titles)
+        # Roles that cleared every gate except the year count, and missed it by
+        # a little. At a 0-2 yr cap the honest match list is often empty for
+        # days — not because the filter is broken but because the market is
+        # thin. These are the "3-5 yrs" postings worth stretching for, and
+        # surfacing them is the difference between a quiet feed and a dead one.
+        self.stretch: list[Job] = []
+        self._stretch_lock = threading.Lock()
 
     def evaluate(self, job: Job) -> bool:
         """Mutates job (matched_keywords, score, experience_note). Returns keep/drop."""
@@ -248,8 +260,6 @@ class Matcher:
 
         ok_exp, note = experience_check(job, self.cfg.max_experience_years)
         job.experience_note = note
-        if not ok_exp:
-            return False
 
         if _SENIORITY_RED_FLAGS.search(haystack_title):
             score -= 2
@@ -257,4 +267,18 @@ class Matcher:
             score += 2          # on-the-ground India beats a maybe-remote listing
         score += self.cfg.priority_boost.get(job.priority, 0)
         job.score = score
+
+        if not ok_exp:
+            self._record_stretch(job, note)
+            return False
         return True
+
+    def _record_stretch(self, job: Job, note: str) -> None:
+        """Keep a job that missed only on years, and only by a little."""
+        m = _YEARS_IN_NOTE.search(note)
+        if not m:
+            return
+        required = int(m.group(1))
+        if required <= self.cfg.max_experience_years + self.cfg.stretch_years:
+            with self._stretch_lock:
+                self.stretch.append(job)

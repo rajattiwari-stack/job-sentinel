@@ -21,14 +21,22 @@ src/main.py ── ThreadPool ──► ATS adapters (parallel, isolated per com
         │                      ├─ Amazon      amazon.jobs/search.json     (custom big-tech)
         │                      └─ Microsoft   gcsservices.careers.microsoft.com (custom big-tech)
         ▼
-Matcher: keywords (word-boundary safe) → seniority veto → location policy → 0–2 yrs experience
+Matcher: seniority veto → keyword must hit TITLE/DEPT → location → 0–2 yrs
         ▼
 SeenStore (state/seen_jobs.json, committed back to repo) → only NEW jobs pass
         ▼
 Notifier: Telegram (chunked, HTML-escaped) + optional email fallback
         ▼
+Self-healer: any company that failed OR returned 0 postings is re-resolved
+             against the ATS APIs; a live board rewrites companies.yaml
+        ▼
 tracker.xlsx (Applied? dropdown, your edits preserved) + docs/index.html (GitHub Pages dashboard)
 ```
+
+**Getting a company list into the scraper.** A list of names and careers links
+isn't usable as-is — `scripts/discover_ats.py` resolves names to real ATS
+boards and `merge_companies.py` folds them into the registry without
+clobbering hand-verified entries. See [Day-2 operations](#day-2-operations).
 
 **Why ATS APIs instead of HTML scraping?** ~90% of tech companies host jobs on one of five ATS platforms, each with a stable public JSON endpoint. HTML scraping breaks every redesign; these APIs don't. One adapter unlocks *every* company on that platform — so adding a company is 3 lines of YAML, not new code.
 
@@ -184,9 +192,61 @@ title is disqualifying, at 5+ it is the target.
 | **A board that returns 200 with zero jobs** | The silent killer — nothing throws, the log says "0 postings", and the company is dead for months. `validate_companies.py` reports empty boards as failures, not as OK |
 | **A company migrating ATS** | Self-healing (below) re-resolves the board mid-run and rewrites `companies.yaml` |
 
-**Tests:** `python -m pytest tests/ -v` — 32 tests covering the riskiest logic (keyword boundaries, location policy, experience parsing, seniority veto, ranking).
+| Wrong company's board (impostor slug) | Board ownership verified against the ATS — see [Board identity](#board-identity--the-impostor-problem) |
+
+**Tests:** `python -m pytest tests/ -v` — 78 tests covering the riskiest logic: keyword boundaries, location policy, experience parsing, seniority veto, ranking, shard rotation, board identity, digest rate-limiting, and self-healing file rewrites.
 
 ---
+
+## Stretch roles & follow-ups
+
+Two nudges the raw alert feed can't give you.
+
+**Stretch roles.** At a 0–2 year cap the honest match list is empty for days.
+That isn't the filter misbehaving — early-career security roles in India are
+genuinely scarce — but a silent bot is indistinguishable from a broken one, and
+"needs 3 years" is a number plenty of people get hired past. Roles that clear
+*every* other gate (security title, India/remote, no seniority flag) and miss
+only on years, by at most `stretch_years`, arrive as a separate labelled digest:
+
+```
+📈 Stretch roles — 2 role(s) just past your experience band.
+🏢 Cloudflare — Product Security Engineer
+📍 In-Office, Remote India     ⏳ needs 5+ yrs
+```
+
+**Follow-ups.** Applications die from silence more than from rejection. Any row
+you marked `Applied? = Yes` in `tracker.xlsx` that's been quiet for 10 days gets
+one reminder. Nothing to set up — it reads the tracker you already keep.
+
+Both are rate-limited through `state/run_meta.json` so a 4×-daily bot doesn't
+repeat itself, both de-duplicate so a role still open next week isn't re-sent,
+and neither can delay or suppress a real job alert — they run after delivery,
+each in its own error boundary.
+
+## Board identity — the impostor problem
+
+Slug guessing fails in a uniquely dangerous way: it produces a **live board full
+of real jobs that belongs to a different company**. Nothing errors and the
+postings look plausible. Real examples caught in this repo's own registry:
+
+| Configured as | The board is actually |
+|---|---|
+| `greenhouse/css` — CSS Corp | **CloudKitchens** |
+| `greenhouse/ultimate` — UKG | **Ultimate Heating & Air, Inc** |
+| `greenhouse/carbon` — Carbon Black | **Carbon, Inc.** |
+| `greenhouse/purestorage` — Pure Storage | **Everpure** |
+| `greenhouse/linkedin` — LinkedIn | **LI Test Company** (a test board) |
+
+Greenhouse and SmartRecruiters both publish the board's owner, which settles it:
+
+```bash
+python scripts/validate_companies.py --identity
+```
+
+Mismatches are **reported, never auto-removed** — a legitimate rebrand
+("Abnormal Security" → "Abnormal") looks identical to an impostor by string
+comparison, and deleting a real board is worse than printing a line to check.
 
 ## Self-healing
 

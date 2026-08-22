@@ -33,6 +33,7 @@ from .tracker import update_tracker
 ROOT = Path(__file__).resolve().parent.parent
 STATE_FILE = ROOT / "state" / "seen_jobs.json"
 RUN_META_FILE = ROOT / "state" / "run_meta.json"
+STRETCH_FILE = ROOT / "state" / "seen_stretch.json"
 TRACKER_FILE = ROOT / "tracker.xlsx"
 MAX_WORKERS = 6
 
@@ -89,6 +90,7 @@ def load_settings(profile_override: str | None) -> tuple[MatchConfig, int, dict]
         exclude_titles=prof.get("exclude_titles") or [],
         priority_boost=prof.get("priority_boost") or {},
         require_role_match=bool(prof.get("require_role_match", True)),
+        stretch_years=int(prof.get("stretch_years", 3)),
     )
     cap = int((raw.get("report") or {}).get("max_jobs_per_run", 60))
     scan = raw.get("scan") or {}
@@ -114,6 +116,37 @@ def scan_company(company: Company, matcher: Matcher) -> tuple[str, list[Job], st
     except Exception as e:  # noqa: BLE001 — isolation by design
         log.error("%-22s FAILED: %s", company.name, e)
         return company.name, [], str(e), 0
+
+
+def _send_extras(matcher: Matcher, store: SeenStore, meta: RunMeta) -> None:
+    """Stretch-role digest and application follow-up nudges.
+
+    Stretch roles are de-duplicated through their own SeenStore: a role that is
+    still open three days later must not be re-sent every run. They're marked
+    seen only after the message lands, same at-least-once rule as job alerts.
+    """
+    from .digest import (find_follow_ups, format_follow_ups, format_stretch,
+                         mark_sent, should_send)
+    from .notifier import send_telegram_text
+
+    if matcher.stretch and should_send(meta.data, "last_stretch_digest"):
+        seen_stretch = SeenStore(STRETCH_FILE)
+        fresh = {j.fingerprint: j for j in matcher.stretch
+                 if seen_stretch.is_new(j.fingerprint)}
+        if fresh:
+            log.info("Stretch digest: %d role(s) just past the experience band.", len(fresh))
+            if send_telegram_text(format_stretch(list(fresh.values()))):
+                for fp in fresh:
+                    seen_stretch.mark(fp)
+                seen_stretch.save()
+                mark_sent(meta.data, "last_stretch_digest")
+
+    if should_send(meta.data, "last_follow_up", every_hours=24):
+        due = find_follow_ups(TRACKER_FILE)
+        if due:
+            log.info("Follow-up reminder: %d application(s) gone quiet.", len(due))
+            if send_telegram_text(format_follow_ups(due)):
+                mark_sent(meta.data, "last_follow_up")
 
 
 def main() -> int:
@@ -202,6 +235,13 @@ def main() -> int:
             log.error("All notification channels failed — jobs NOT marked, will retry next run.")
     else:
         log.info("No new jobs this run.")
+
+    # Extras: strictly additive, and never allowed to delay or suppress an
+    # actual job alert — hence after delivery, each in its own try block.
+    try:
+        _send_extras(matcher, store, meta)
+    except Exception as e:  # noqa: BLE001
+        log.warning("Digest pass failed: %s", e)
 
     # Self-healing: a board that migrated ATS usually stops erroring and simply
     # goes quiet, so zero-posting companies are suspects, not just failures.

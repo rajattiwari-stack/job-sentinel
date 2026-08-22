@@ -85,6 +85,11 @@ class RunMeta:
         except (FileNotFoundError, ValueError, json.JSONDecodeError):
             self._data = {}
 
+    @property
+    def data(self) -> dict:
+        """Free-form run metadata (digest timestamps, etc). Mutate in place; save()."""
+        return self._data
+
     def current_shard(self, shards: int) -> int:
         if shards <= 1:
             return 0
