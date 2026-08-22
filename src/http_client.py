@@ -95,6 +95,8 @@ def request_json(
             if "(permanent)" in str(e):
                 raise
             last_err = e
+        except requests.exceptions.SSLError as e:
+            raise HttpError(f"TLS failure (permanent) for {url}: {e}") from e
         except (requests.ConnectionError, requests.Timeout, ValueError) as e:
             last_err = e
 

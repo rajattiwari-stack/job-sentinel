@@ -3,7 +3,7 @@ active_profile: cybersecurity
 profiles:
   cybersecurity:
     max_experience_years: 3
-    max_posting_age_days: 45
+    max_posting_age_days: 120
     require_role_match: true
 
     exclude_titles:
@@ -243,7 +243,7 @@ profiles:
 
   data_engineering:
     max_experience_years: 3
-    max_posting_age_days: 45
+    max_posting_age_days: 120
     exclude_titles: [senior, sr, staff, principal, lead, manager, director, head, vp, architect]
     keywords:
       - data engineer
@@ -259,7 +259,7 @@ profiles:
 
   software_engineering:
     max_experience_years: 3
-    max_posting_age_days: 45
+    max_posting_age_days: 120
     exclude_titles: [senior, sr, staff, principal, lead, manager, director, head, vp, architect]
     keywords:
       - software engineer

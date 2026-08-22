@@ -1056,6 +1056,7 @@ companies:
     ats: microsoft
     slug: "microsoft"
     priority: unknown
+    enabled: false
   - name: "Mixpanel India"
     ats: greenhouse
     slug: "mixpanel"
