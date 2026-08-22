@@ -260,12 +260,15 @@ def main() -> int:
     # goes quiet, so zero-posting companies are suspects, not just failures.
     healed = 0
     try:
-        from .healer import apply_fixes, diagnose, format_report, heal
+        from .healer import (apply_fixes, diagnose, format_report, heal,
+                             record_attempts)
         from .notifier import send_telegram_text
-        suspects = diagnose(companies, postings_seen, failures)
+        attempts = meta.data.setdefault("heal_attempts", {})
+        suspects = diagnose(companies, postings_seen, failures, attempts)
         if suspects:
             log.info("Self-healing: re-probing %d silent/failed compan(ies).", len(suspects))
             fixes = heal(suspects)
+            record_attempts(attempts, suspects, fixes)
             if apply_fixes(ROOT / "config" / "companies.yaml", fixes):
                 healed = len(fixes)
                 send_telegram_text(format_report(fixes))

@@ -152,3 +152,31 @@ def test_same_board_compares_workday_host_and_path():
                            "workday_path": "ext"})
     assert not _same_board(c, {"ats": "workday", "workday_host": "x.wd5.myworkdayjobs.com",
                                "workday_path": "different"})
+
+
+# ---- probe budget must not be monopolised by the unfixable ----
+def test_repeatedly_unfixable_company_is_set_aside():
+    """Tenable/Akamai/Fortinet/Splunk can't be re-resolved from anything we
+    hold. Without a memory they'd eat the budget every run forever, and a
+    board that broke today would never be looked at."""
+    from src.healer import GIVE_UP_AFTER
+    stuck = Company(name="Stuck", ats="workday", slug="stuck")
+    fresh = Company(name="Fresh", ats="greenhouse", slug="fresh")
+    attempts = {"Stuck": GIVE_UP_AFTER}
+    picked = diagnose([stuck, fresh], {"Stuck": 0, "Fresh": 0}, {}, attempts)
+    assert [c.name for c in picked] == ["Fresh"]
+
+
+def test_attempts_accumulate_then_clear_on_success():
+    from src.healer import record_attempts
+    a, c = {}, Company(name="X", ats="greenhouse", slug="x")
+    record_attempts(a, [c], [])
+    record_attempts(a, [c], [])
+    assert a["X"] == 2
+    record_attempts(a, [c], [{"name": "X"}])      # repaired
+    assert "X" not in a
+
+
+def test_no_attempt_memory_behaves_as_before():
+    c = Company(name="X", ats="greenhouse", slug="x")
+    assert [x.name for x in diagnose([c], {"X": 0}, {})] == ["X"]

@@ -146,10 +146,27 @@ garbage rather than errors:
   one board, at most one is right and there's no way to tell which — so neither
   is kept.
 
-**Scanning several hundred boards** — a single run may not fit in the Actions
-window. Set `scan.shards` in `config/settings.yaml` to split the roster across
+**Scanning several hundred boards.** Measured: a full sweep of all ~250 boards
+takes **~7 minutes** at 12 workers (timed over a home connection, so an upper
+bound versus a GitHub runner) against a 45-minute job timeout. Sharding is
+therefore **off** — it would cost alert latency for headroom the measurement
+says we don't need, and applying early matters.
+
+If the roster grows several-fold, set `scan.shards` to split it across
 consecutive runs (4 shards × 4 runs/day = full coverage daily, each run short).
-`shards: 1` scans everything every run.
+The rotation is implemented and tested; it just isn't needed yet.
+
+Where the time actually goes, per the same measurement:
+
+| ATS | boards | total | why |
+|---|---|---|---|
+| SmartRecruiters | 40 | 1694s | one detail request per posting, all serialized behind a single host |
+| Greenhouse | 152 | 1117s | one request per board — cheap, just many of them |
+| Workday | 15 | 943s | search × pages, then a detail request per posting |
+| Lever | 37 | 257s | one request per board |
+
+Workday and SmartRecruiters dominate despite being 22% of the roster, which is
+why both have per-company fetch budgets.
 
 **Change the experience window** — `max_experience_years` in the active profile.
 If you raise it above ~4, also trim `exclude_titles`: at 0–2 years a "Senior"

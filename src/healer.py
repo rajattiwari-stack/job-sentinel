@@ -52,13 +52,42 @@ def _same_board(company: Company, found: dict) -> bool:
     return str(found.get("slug", "")).lower() == str(company.slug).lower()
 
 
+GIVE_UP_AFTER = 3            # consecutive failed repair attempts before backing off
+
+
 def diagnose(companies: list[Company], counts: dict[str, int],
-             failures: dict[str, str]) -> list[Company]:
-    """Companies worth re-probing: hard failures first, then silent zeros."""
-    suspects = [c for c in companies if c.name in failures]
-    suspects += [c for c in companies
-                 if c.name not in failures and counts.get(c.name, 0) == 0]
-    return suspects[:MAX_HEAL_ATTEMPTS]
+             failures: dict[str, str], attempts: dict[str, int] | None = None) -> list[Company]:
+    """Companies worth re-probing: hard failures first, then silent zeros.
+
+    Some boards simply cannot be re-resolved — Tenable, Akamai, Fortinet and
+    Splunk are on Workday under board paths that aren't derivable from anything
+    we hold, and none of them appear on another public ATS. Without a memory of
+    what's already been tried, those four would consume the probe budget every
+    single run and a board that broke *today* would never get looked at. So a
+    company that has failed to resolve GIVE_UP_AFTER times is set aside until
+    the counter is cleared (weekly), and the budget goes to fresher breakage.
+    """
+    attempts = attempts or {}
+    ordered = [c for c in companies if c.name in failures]
+    ordered += [c for c in companies
+                if c.name not in failures and counts.get(c.name, 0) == 0]
+    fresh = [c for c in ordered if attempts.get(c.name, 0) < GIVE_UP_AFTER]
+    skipped = len(ordered) - len(fresh)
+    if skipped:
+        log.info("Self-healing: %d compan(ies) set aside after %d failed repairs.",
+                 skipped, GIVE_UP_AFTER)
+    return fresh[:MAX_HEAL_ATTEMPTS]
+
+
+def record_attempts(attempts: dict[str, int], probed: list[Company],
+                    fixes: list[dict]) -> None:
+    """Count a miss against a company; clear its counter the moment it's fixed."""
+    fixed = {f["name"] for f in fixes}
+    for c in probed:
+        if c.name in fixed:
+            attempts.pop(c.name, None)
+        else:
+            attempts[c.name] = attempts.get(c.name, 0) + 1
 
 
 def heal(suspects: list[Company]) -> list[dict]:
