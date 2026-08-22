@@ -97,8 +97,8 @@ def load_settings(profile_override: str | None) -> tuple[MatchConfig, int, dict]
     return cfg, cap, scan
 
 
-def scan_company(company: Company, matcher: Matcher) -> tuple[str, list[Job], str]:
-    """Returns (company, matched_jobs, error). Never raises."""
+def scan_company(company: Company, matcher: Matcher) -> tuple[str, list[Job], str, int]:
+    """Returns (company, matched_jobs, error, postings_seen). Never raises."""
     try:
         jobs = fetch_jobs(company)
         matched = []
@@ -109,10 +109,10 @@ def scan_company(company: Company, matcher: Matcher) -> tuple[str, list[Job], st
             if matcher.evaluate(j):
                 matched.append(j)
         log.info("%-22s %4d postings → %d matches", company.name, len(jobs), len(matched))
-        return company.name, matched, ""
+        return company.name, matched, "", len(jobs)
     except Exception as e:  # noqa: BLE001 — isolation by design
         log.error("%-22s FAILED: %s", company.name, e)
-        return company.name, [], str(e)
+        return company.name, [], str(e), 0
 
 
 def main() -> int:
@@ -141,12 +141,14 @@ def main() -> int:
 
     all_matches: list[Job] = []
     failures: dict[str, str] = {}
+    postings_seen: dict[str, int] = {}
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futs = [pool.submit(scan_company, c, matcher) for c in companies]
         for fut in as_completed(futs):
-            name, matched, err = fut.result()
+            name, matched, err, seen = fut.result()
             if err:
                 failures[name] = err
+            postings_seen[name] = seen
             all_matches.extend(matched)
 
     # Dedup within the run (same job can surface via multiple Workday searches / offices)
@@ -200,6 +202,20 @@ def main() -> int:
             log.error("All notification channels failed — jobs NOT marked, will retry next run.")
     else:
         log.info("No new jobs this run.")
+
+    # Self-healing: a board that migrated ATS usually stops erroring and simply
+    # goes quiet, so zero-posting companies are suspects, not just failures.
+    try:
+        from .healer import apply_fixes, diagnose, format_report, heal
+        from .notifier import send_telegram_text
+        suspects = diagnose(companies, postings_seen, failures)
+        if suspects:
+            log.info("Self-healing: re-probing %d silent/failed compan(ies).", len(suspects))
+            fixes = heal(suspects)
+            if apply_fixes(ROOT / "config" / "companies.yaml", fixes):
+                send_telegram_text(format_report(fixes))
+    except Exception as e:  # noqa: BLE001 — healing must never break delivery
+        log.warning("Self-healing pass failed: %s", e)
 
     try:
         from .report import write_dashboard

@@ -182,10 +182,44 @@ title is disqualifying, at 5+ it is the target.
 | State file growing forever | 90-day pruning on every save |
 | Total systemic failure | Non-zero exit (→ red ❌ + GitHub email) only if >50% of companies fail |
 | **A board that returns 200 with zero jobs** | The silent killer — nothing throws, the log says "0 postings", and the company is dead for months. `validate_companies.py` reports empty boards as failures, not as OK |
+| **A company migrating ATS** | Self-healing (below) re-resolves the board mid-run and rewrites `companies.yaml` |
 
 **Tests:** `python -m pytest tests/ -v` — 32 tests covering the riskiest logic (keyword boundaries, location policy, experience parsing, seniority veto, ranking).
 
 ---
+
+## Self-healing
+
+Companies migrate ATS. When they do, the old endpoint usually doesn't error —
+it just stops having jobs. **Zscaler and Palo Alto Networks, the two most
+relevant employers on this list, both sat at zero postings** until this was
+built: SmartRecruiters answers HTTP 200 with `{"totalFound": 0}` for a slug it
+has never heard of, so nothing threw, nothing alerted, and the log read
+`0 postings` exactly like a company with no openings.
+
+After every scan, any company that hard-failed **or returned zero postings** is
+re-resolved: slug guesses across all four ATS APIs, then its careers page
+(the only route to a Workday board, whose host and path aren't derivable from
+a name). If a live board is found, `config/companies.yaml` is rewritten in
+place, the change is committed by the workflow, and you get a Telegram message:
+
+```
+🔧 Self-healing — board(s) repaired:
+• Zscaler: smartrecruiters/Zscaler → greenhouse/zscaler (346 postings, via slug-guess)
+```
+
+Deliberate limits:
+- Healing only ever **replaces a dead board with a live one**. It never disables
+  a company — an employer with genuinely no openings looks identical to a
+  migrated one, and guessing wrong there would silently stop watching them.
+- At most 12 probes per run, so a systemic outage (network down, everything at
+  zero) can't turn into hundreds of requests.
+- Every repair is announced. Silent self-modification would be a worse failure
+  mode than the bug it fixes.
+- The edit is line-based and atomic, and preserves your comments and `priority`.
+  `tests/test_healer.py` reparses the file after every repair and asserts the
+  untouched entries survived byte-for-byte — an earlier block-regex version
+  welded the next company onto the healed one and still produced valid YAML.
 
 ## Legal & etiquette
 This reads the same public JSON endpoints each company's own careers page calls, at low volume (4 polite runs/day with delays and backoff). Don't lower the politeness delays or add hundreds of companies to a single run without spreading schedules.

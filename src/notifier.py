@@ -103,6 +103,29 @@ def send_telegram(jobs: list[Job]) -> bool:
     return ok
 
 
+def send_telegram_text(text: str) -> bool:
+    """Send one operational message (not a job alert) to every configured chat."""
+    token = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+    chats = _chat_ids()
+    if not token or not chats:
+        return False
+    ok = False
+    for chat_id in chats:
+        try:
+            r = requests.post(
+                f"https://api.telegram.org/bot{token}/sendMessage",
+                json={"chat_id": chat_id, "text": text[:TG_LIMIT], "parse_mode": "HTML",
+                      "disable_web_page_preview": True},
+                timeout=20,
+            )
+            r.raise_for_status()
+            ok = True
+            time.sleep(1.2)
+        except Exception as e:  # noqa: BLE001 — never kills the run
+            log.error("Telegram text send to %s failed: %s", chat_id, e)
+    return ok
+
+
 def send_telegram_excel(filepath: str, caption: str) -> bool:
     """Send the compiled Excel as a document to every configured chat.
 
