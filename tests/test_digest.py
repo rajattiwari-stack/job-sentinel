@@ -131,3 +131,22 @@ def test_follow_up_message_shape():
                               "age_days": 18}])
     assert "18 days ago" in out and "Zscaler" in out
     assert "\n\n\n" not in out
+
+
+# ---- weekly health report ----
+def test_health_report_names_the_problems():
+    from src.digest import format_health
+    out = format_health(60, {"Foo": "HTTP 404"}, ["Bar", "Baz"], healed=2)
+    assert "57/60" in out and "Foo" in out and "Bar" in out and "2 auto-repaired" in out
+
+
+def test_health_report_when_all_is_well():
+    from src.digest import format_health
+    out = format_health(60, {}, [])
+    assert "60/60" in out and "Nothing to do" in out
+
+
+def test_health_report_is_weekly_not_per_run():
+    meta = {}
+    mark_sent(meta, "last_health_report")
+    assert not should_send(meta, "last_health_report", every_hours=168)

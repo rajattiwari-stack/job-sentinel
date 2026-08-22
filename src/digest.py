@@ -98,6 +98,33 @@ def find_follow_ups(tracker_path: Path, today: date | None = None) -> list[dict]
     return due[:MAX_FOLLOW_UPS]
 
 
+def format_health(scanned: int, failures: dict[str, str], empty: list[str],
+                  healed: int = 0) -> str:
+    """Weekly registry health note.
+
+    The self-healer repairs what it can resolve automatically. What's left —
+    a board that 404s, or one that has been empty for weeks — needs a human,
+    and without a periodic nudge nobody ever looks. A roster decays quietly:
+    each individual dead company is invisible against 249 working ones.
+    """
+    ok = scanned - len(failures) - len(empty)
+    lines = [f"🩺 <b>Registry health</b> — {ok}/{scanned} boards healthy this run."]
+    if healed:
+        lines.append(f"🔧 {healed} auto-repaired since the last report.")
+    if failures:
+        lines.append(f"\n<b>Failing ({len(failures)}):</b>")
+        for name, err in list(failures.items())[:10]:
+            lines.append(f"• {_esc(name)} — {_esc(err[:70])}")
+    if empty:
+        lines.append(f"\n<b>Serving zero jobs ({len(empty)}):</b>")
+        lines.append(_esc(", ".join(empty[:20])))
+        lines.append("<i>Usually a moved board. Re-run scripts/discover_ats.py "
+                     "for these, or set enabled: false to stop watching.</i>")
+    if not failures and not empty:
+        lines.append("Everything responding. Nothing to do.")
+    return "\n".join(lines)
+
+
 def format_follow_ups(rows: list[dict]) -> str:
     blocks = []
     for r in rows:

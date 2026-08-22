@@ -248,6 +248,45 @@ def test_role_match_can_be_relaxed():
     assert Matcher(cfg).evaluate(j) is True
 
 
+def test_freshness_reads_every_ats_date_format():
+    """Greenhouse/Lever/Ashby give ISO dates; Workday gives prose."""
+    from datetime import date, timedelta
+
+    from src.matcher import days_since_posted
+
+    def with_date(raw):
+        j = make()
+        j.posted_at = raw
+        return j
+
+    today = date.today()
+    assert days_since_posted(with_date(today.isoformat())) == 0
+    assert days_since_posted(with_date((today - timedelta(days=5)).isoformat())) == 5
+    assert days_since_posted(with_date("Posted Today")) == 0
+    assert days_since_posted(with_date("Posted 3 Days Ago")) == 3
+    assert days_since_posted(with_date("Posted 30+ Days Ago")) == 30
+    # Unknown age must not be guessed at.
+    assert days_since_posted(with_date("")) is None
+    assert days_since_posted(with_date("sometime last spring")) is None
+
+
+def test_fresh_posting_outranks_stale_one():
+    from datetime import date, timedelta
+
+    m = Matcher(JUNIOR)
+    fresh, stale = make(desc="EDR. 1-2 years."), make(desc="EDR. 1-2 years.")
+    fresh.posted_at = date.today().isoformat()
+    stale.posted_at = (date.today() - timedelta(days=60)).isoformat()
+    assert m.evaluate(fresh) and m.evaluate(stale)
+    assert fresh.score > stale.score
+
+
+def test_unknown_age_is_not_penalised():
+    """A missing date must not push a good match below a mediocre fresh one."""
+    from src.matcher import freshness_boost
+    assert freshness_boost(make()) == 0
+
+
 def test_priority_boost_ranks_high_fit_companies():
     cfg = MatchConfig(keywords=["security engineer"], max_experience_years=2,
                       priority_boost={"high": 6, "medium": 2})

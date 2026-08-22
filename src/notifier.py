@@ -37,7 +37,18 @@ def format_job_html(j: Job) -> str:
         f"📍 {_esc(j.location or 'Location not listed')}",
         f"🎯 {_esc(kw)}   ⏳ {_esc(j.experience_note)}",
     ]
-    if j.posted_at:
+    # Age, not a raw date: "🔥 posted today" tells you to drop everything,
+    # "2026-08-14" makes you do the arithmetic yourself.
+    from .matcher import days_since_posted
+    age = days_since_posted(j)
+    if age is not None:
+        if age <= 1:
+            lines.append("🔥 <b>posted today</b> — apply now")
+        elif age <= 7:
+            lines.append(f"🗓 posted {age} days ago")
+        else:
+            lines.append(f"🗓 posted {age} days ago{' — likely stale' if age > 30 else ''}")
+    elif j.posted_at:
         lines.append(f"🗓 {_esc(j.posted_at)}")
     return "\n".join(lines)
 

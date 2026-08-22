@@ -27,13 +27,24 @@ PAGE = 100
 MAX_PAGES = 30    # 3000 postings ceiling — sanity guard
 MAX_DETAILS = 60  # per-company round-trip budget; see workday.py for the rationale
 
-# Broad pre-filter: security-ish title OR India/remote location.
+# Pre-filter deciding which postings are worth a detail request.
+#
+# This used to be "security-ish title OR India/remote location", which meant
+# every India-based opening — Finance, Sales, Facilities — bought a round trip.
+# The matcher now requires a keyword in the TITLE or DEPARTMENT, so a posting
+# whose title and function look nothing like security cannot match no matter
+# what its description says. Fetching it is pure cost, and SmartRecruiters
+# details all serialize behind one host's politeness delay.
+#
+# Deliberately broader than the configured keyword list: this is a cheap
+# pre-filter, and the Matcher does the precise work afterwards.
 _PLAUSIBLE = re.compile(
-    r"secur|cyber|network|soc\b|siem|edr|threat|vulnerab|zscaler|zia\b|zpa\b|"
-    r"firewall|sase|zero\s*trust|incident|penetration|appsec|infosec|architect",
+    r"secur|cyber|network|soc\b|siem|edr|xdr|threat|vulnerab|zscaler|zia\b|zpa\b|"
+    r"firewall|sase|sse\b|ztna|casb|\bdlp\b|zero\s*trust|incident|penetration|"
+    r"appsec|infosec|devsecops|iam\b|identity|malware|forensic|risk|compliance|"
+    r"privacy|fraud|trust\s*&?\s*safety|architect",
     re.IGNORECASE,
 )
-_LOC_OK = re.compile(r"india|remote|bengaluru|bangalore|hyderabad|pune|mumbai|chennai|gurgaon|gurugram|noida|delhi", re.IGNORECASE)
 
 
 def _loc_str(j: dict) -> str:
@@ -56,7 +67,8 @@ def fetch(company: Company) -> Iterable[Job]:
         for j in content:
             title = (j.get("name") or "").strip()
             loc = _loc_str(j)
-            if not (_PLAUSIBLE.search(title) or _LOC_OK.search(loc)):
+            dept = (j.get("function") or {}).get("label", "") or ""
+            if not _PLAUSIBLE.search(f"{title} {dept}"):
                 continue
             if details >= MAX_DETAILS:
                 log.info("%s: detail budget (%d) reached, stopping early.",

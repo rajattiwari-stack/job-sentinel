@@ -118,6 +118,19 @@ def scan_company(company: Company, matcher: Matcher) -> tuple[str, list[Job], st
         return company.name, [], str(e), 0
 
 
+def _send_health(meta: RunMeta, scanned: int, failures: dict[str, str],
+                 postings_seen: dict[str, int], healed: int) -> None:
+    """Weekly note about boards the self-healer couldn't fix on its own."""
+    from .digest import format_health, mark_sent, should_send
+    from .notifier import send_telegram_text
+
+    if not should_send(meta.data, "last_health_report", every_hours=168):
+        return
+    empty = sorted(n for n, c in postings_seen.items() if c == 0 and n not in failures)
+    if send_telegram_text(format_health(scanned, failures, empty, healed)):
+        mark_sent(meta.data, "last_health_report")
+
+
 def _send_extras(matcher: Matcher, store: SeenStore, meta: RunMeta) -> None:
     """Stretch-role digest and application follow-up nudges.
 
@@ -245,6 +258,7 @@ def main() -> int:
 
     # Self-healing: a board that migrated ATS usually stops erroring and simply
     # goes quiet, so zero-posting companies are suspects, not just failures.
+    healed = 0
     try:
         from .healer import apply_fixes, diagnose, format_report, heal
         from .notifier import send_telegram_text
@@ -253,9 +267,15 @@ def main() -> int:
             log.info("Self-healing: re-probing %d silent/failed compan(ies).", len(suspects))
             fixes = heal(suspects)
             if apply_fixes(ROOT / "config" / "companies.yaml", fixes):
+                healed = len(fixes)
                 send_telegram_text(format_report(fixes))
     except Exception as e:  # noqa: BLE001 — healing must never break delivery
         log.warning("Self-healing pass failed: %s", e)
+
+    try:
+        _send_health(meta, len(companies), failures, postings_seen, healed)
+    except Exception as e:  # noqa: BLE001
+        log.warning("Health report failed: %s", e)
 
     try:
         from .report import write_dashboard

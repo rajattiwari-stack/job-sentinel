@@ -18,6 +18,7 @@ import html
 import re
 import threading
 from dataclasses import dataclass, field
+from datetime import date, datetime
 
 from .models import Job
 
@@ -201,6 +202,43 @@ def clean_text(raw: str) -> str:
 
 _YEARS_IN_NOTE = re.compile(r"needs (\d{1,2})\+ yrs")
 
+# Workday reports age as prose ("Posted 3 Days Ago"), the JSON ATSs give an
+# ISO date. Both are worth reading: response rates fall off a cliff once a
+# posting has been up a week, so a fresh role you can apply to today beats a
+# slightly better-matching one that has been collecting applicants for a month.
+_POSTED_PROSE = re.compile(r"(\d+)\+?\s*day", re.IGNORECASE)
+_POSTED_TODAY = re.compile(r"\b(today|just posted|yesterday)\b", re.IGNORECASE)
+
+
+def days_since_posted(job: Job) -> int | None:
+    """Age of the posting in days, or None if it can't be determined."""
+    raw = (job.posted_at or "").strip()
+    if not raw:
+        return None
+    if _POSTED_TODAY.search(raw):
+        return 0
+    m = _POSTED_PROSE.search(raw)
+    if m:
+        return int(m.group(1))
+    try:
+        posted = datetime.strptime(raw[:10], "%Y-%m-%d").date()
+    except ValueError:
+        return None
+    return max((date.today() - posted).days, 0)
+
+
+def freshness_boost(job: Job) -> int:
+    age = days_since_posted(job)
+    if age is None:
+        return 0                 # unknown age is not penalised, just not boosted
+    if age <= 3:
+        return 5
+    if age <= 7:
+        return 3
+    if age <= 14:
+        return 1
+    return 0
+
 
 class Matcher:
     def __init__(self, cfg: MatchConfig):
@@ -266,6 +304,7 @@ class Matcher:
         if loc_reason == "india":
             score += 2          # on-the-ground India beats a maybe-remote listing
         score += self.cfg.priority_boost.get(job.priority, 0)
+        score += freshness_boost(job)   # apply-early beats apply-well
         job.score = score
 
         if not ok_exp:
