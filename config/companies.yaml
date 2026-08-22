@@ -610,9 +610,10 @@ companies:
 
   # ---- priority: unknown ----
   - name: "1Password"
-    ats: lever
-    slug: "1password"
+    ats: ashby
+    slug: 1password
     priority: unknown
+    # auto-healed: was lever/1password
   - name: "Abnormal Security"
     ats: greenhouse
     slug: "abnormalsecurity"
@@ -745,10 +746,11 @@ companies:
     priority: unknown
   - name: "F5"
     ats: workday
-    slug: "f5"
-    workday_host: ffive.wd1.myworkdayjobs.com
+    slug: ffive
+    workday_host: ffive.wd5.myworkdayjobs.com
     workday_path: f5jobs
     priority: unknown
+    # auto-healed: was workday/ffive.wd1
   - name: "Fortinet"
     ats: workday
     slug: "fortinet"
@@ -760,17 +762,19 @@ companies:
     slug: "Freshworks"
     priority: unknown
   - name: "Gainsight"
-    ats: smartrecruiters
-    slug: "gainsight"
+    ats: ashby
+    slug: gainsight
     priority: unknown
+    # auto-healed: was smartrecruiters/gainsight
   - name: "GitLab"
     ats: greenhouse
     slug: "gitlab"
     priority: unknown
   - name: "Groww"
-    ats: lever
-    slug: "groww"
+    ats: greenhouse
+    slug: groww
     priority: unknown
+    # auto-healed: was lever/groww
   - name: "HashiCorp"
     ats: greenhouse
     slug: "hashicorp"
@@ -788,9 +792,10 @@ companies:
     slug: "hyatthotels"
     priority: unknown
   - name: "Illumio"
-    ats: greenhouse
-    slug: "illumio"
+    ats: ashby
+    slug: illumio
     priority: unknown
+    # auto-healed: was greenhouse/illumio
   - name: "Instahyre"
     ats: smartrecruiters
     slug: "instahyre"
@@ -857,9 +862,10 @@ companies:
     slug: "notion"
     priority: unknown
   - name: "Nutanix"
-    ats: lever
-    slug: "nutanix"
+    ats: ashby
+    slug: nutanix
     priority: unknown
+    # auto-healed: was lever/nutanix
   - name: "Okta"
     ats: greenhouse
     slug: "okta"
@@ -927,9 +933,10 @@ companies:
     workday_path: External_Career_Site
     priority: unknown
   - name: "Semgrep"
-    ats: greenhouse
-    slug: "semgrep"
+    ats: ashby
+    slug: semgrep
     priority: unknown
+    # auto-healed: was greenhouse/semgrep
   - name: "SentinelOne"
     ats: greenhouse
     slug: "sentinellabs"
@@ -947,9 +954,10 @@ companies:
     slug: "smartbear"
     priority: unknown
   - name: "Snyk"
-    ats: greenhouse
-    slug: "snyk"
+    ats: ashby
+    slug: snyk
     priority: unknown
+    # auto-healed: was greenhouse/snyk
   - name: "Splunk (Cisco)"
     ats: workday
     slug: "splunk"

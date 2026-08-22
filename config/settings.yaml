@@ -142,13 +142,15 @@ report:
 # splits the roster across consecutive runs: run N scans shard (N mod shards).
 # `shards: 1` disables it entirely and every run scans everything.
 scan:
-  # 250 boards is too many for one run: SmartRecruiters detail fetches all
-  # share a single host and serialize behind the politeness delay, so a full
-  # sweep can exceed the Actions timeout — and a run killed by timeout
-  # delivers nothing at all.
+  # MEASURED, not guessed: a full sweep of all 250 boards takes ~7 min wall at
+  # 12 workers, timed end-to-end from a home connection — slower than a GitHub
+  # runner, so treat it as an upper bound against the 45-min job timeout.
   #
-  # 4 shards x 4 runs/day = every company checked once a day, each run short.
-  # Drop to 2 for twice-daily coverage if runs finish comfortably; 1 disables
-  # sharding entirely.
-  shards: 4
+  # Sharding is therefore switched OFF. It costs alert latency (a 4-shard
+  # rotation means a new posting can sit unseen for ~24h) and buys headroom we
+  # measurably do not need. Applying early is worth real money in a job hunt.
+  #
+  # Raise this to 2 or 4 if the roster grows several-fold or runs start
+  # approaching the timeout — the rotation is correct and tested either way.
+  shards: 1
   max_workers: 12

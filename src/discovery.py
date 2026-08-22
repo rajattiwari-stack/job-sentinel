@@ -107,10 +107,11 @@ def probe_lever(slug: str) -> tuple[bool, int]:
 
 
 def probe_ashby(slug: str) -> tuple[bool, int]:
+    """GET, not POST — Ashby now 401s every POST, valid board or not."""
     _wait("api.ashbyhq.com")
-    r = requests.post(f"https://api.ashbyhq.com/posting-api/job-board/{slug}",
-                      json={"includeCompensation": False},
-                      headers={"User-Agent": UA}, timeout=TIMEOUT)
+    r = requests.get(f"https://api.ashbyhq.com/posting-api/job-board/{slug}",
+                     params={"includeCompensation": "false"},
+                     headers={"User-Agent": UA}, timeout=TIMEOUT)
     if r.status_code != 200:
         return False, 0
     d = r.json()
@@ -237,6 +238,44 @@ def identity_matches(company_name: str, board_name: str, threshold: float = 0.6)
     if short in long:
         return len(short) / len(long) >= threshold
     return False
+
+
+def find_workday_path(host: str, tenant: str = "") -> Optional[str]:
+    """Find the board path for a Workday host we already know.
+
+    A Workday board is host + path (crowdstrike.wd5.myworkdayjobs.com +
+    crowdstrikecareers) and the path is not derivable from the company name.
+    When a tenant renames its board the host keeps resolving and the CXS
+    endpoint answers 422 — a code that reads like a malformed request rather
+    than "wrong board", which is why five companies failed identically here.
+
+    The host is the hard part and we already have it, so try the handful of
+    shapes Workday tenants actually use.
+    """
+    tenant = tenant or host.split(".")[0]
+    base = tenant.replace("-", "")
+    candidates = [
+        "External", "Careers", "careers", "external", f"{base}careers",
+        f"{base.capitalize()}Careers", base, base.capitalize(),
+        "External_Career_Site", "ExternalCareerSite", "external_experienced",
+        f"{base}_careers", f"{base}External", f"{base}externalcareers",
+        "Professional", "GlobalCareers", "Global_Careers", "jobs",
+    ]
+    hdrs = {"User-Agent": UA, "Accept": "application/json",
+            "Content-Type": "application/json"}
+    for path in dict.fromkeys(candidates):
+        try:
+            _wait(host)
+            r = requests.post(
+                f"https://{host}/wday/cxs/{tenant}/{path}/jobs",
+                json={"appliedFacets": {}, "limit": 1, "offset": 0, "searchText": ""},
+                headers=hdrs, timeout=TIMEOUT,
+            )
+            if r.status_code == 200 and isinstance(r.json().get("total"), int):
+                return path
+        except Exception:                    # noqa: BLE001
+            continue
+    return None
 
 
 def find_board(name: str, careers_url: str = "", full_sweep: bool = True) -> Optional[dict]:
