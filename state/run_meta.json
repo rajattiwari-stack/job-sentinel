@@ -1,16 +1,16 @@
 {
 "heal_attempts": {
-"Akamai": 2,
-"Armis": 2,
-"Atlassian": 2,
-"Browserstack": 2,
-"Cars24": 2,
-"Chargebee": 2,
-"Fidelis Cybersecurity": 2,
-"Fortinet": 2,
-"Glean": 2,
-"HashiCorp": 2,
-"Rippling": 2,
-"Splunk (Cisco)": 2
+"Akamai": 3,
+"Armis": 3,
+"Atlassian": 3,
+"Browserstack": 3,
+"Cars24": 3,
+"Chargebee": 3,
+"Fidelis Cybersecurity": 3,
+"Fortinet": 3,
+"Glean": 3,
+"HashiCorp": 3,
+"Rippling": 3,
+"Splunk (Cisco)": 3
 }
 }
