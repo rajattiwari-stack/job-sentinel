@@ -1062,8 +1062,10 @@ companies:
     slug: "BoschGroup"
     priority: unknown
   - name: "Browserstack"
-    ats: greenhouse
+    ats: workday
     slug: "browserstack"
+    workday_host: browserstack.wd3.myworkdayjobs.com
+    workday_path: External
     priority: unknown
   - name: "Buildkite"
     ats: greenhouse
