@@ -601,10 +601,6 @@ companies:
     ats: lever
     slug: "secureframe"
     priority: medium
-  - name: "Securiti.ai"
-    ats: smartrecruiters
-    slug: "securiti"
-    priority: medium
   - name: "Sentra"
     ats: ashby
     slug: "sentra"
@@ -905,10 +901,6 @@ companies:
     ats: lever
     slug: "lyrahealth"
     priority: low
-  - name: "Namely HR"
-    ats: smartrecruiters
-    slug: "namely"
-    priority: low
   - name: "Neon Database"
     ats: lever
     slug: "neon"
@@ -1037,10 +1029,6 @@ companies:
     ats: amazon
     slug: "amazon"
     priority: unknown
-  - name: "American Express"
-    ats: smartrecruiters
-    slug: "americanexpressglobal"
-    priority: unknown
   - name: "Anthropic (India-facing roles)"
     ats: greenhouse
     slug: "anthropic"
@@ -1096,10 +1084,6 @@ companies:
   - name: "Chargebee"
     ats: greenhouse
     slug: "chargebee"
-    priority: unknown
-  - name: "Citrix (Cloud Software Group)"
-    ats: smartrecruiters
-    slug: "citrix1"
     priority: unknown
   - name: "Cloudflare"
     ats: greenhouse
@@ -1265,10 +1249,6 @@ companies:
     workday_host: kla.wd1.myworkdayjobs.com
     workday_path: Search
     priority: unknown
-  - name: "Knowlarity"
-    ats: smartrecruiters
-    slug: "knowlarity1"
-    priority: unknown
   - name: "Kong Inc"
     ats: ashby
     slug: "kong"
@@ -1309,10 +1289,6 @@ companies:
   - name: "LogiNext Solutions"
     ats: smartrecruiters
     slug: "loginext"
-    priority: unknown
-  - name: "Mahindra & Mahindra"
-    ats: smartrecruiters
-    slug: "mahindra1"
     priority: unknown
   - name: "Media.net"
     ats: smartrecruiters
@@ -1596,10 +1572,6 @@ companies:
     slug: "broadcom"
     workday_host: broadcom.wd1.myworkdayjobs.com
     workday_path: External_Career
-    priority: unknown
-  - name: "Vulcan Cyber (Tenable)"
-    ats: smartrecruiters
-    slug: "vulcancyberinc"
     priority: unknown
   - name: "Vultr"
     ats: ashby

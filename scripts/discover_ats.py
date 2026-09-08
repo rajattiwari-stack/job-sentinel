@@ -44,6 +44,13 @@ from src.discovery import find_board, probe_careers_page  # noqa: E402
 
 WORKERS = 14
 
+# A board serving one or two postings is almost never a company's real careers
+# board. SmartRecruiters in particular is full of abandoned trial accounts that
+# answer 200 with a single posting titled "test", "job" or "Test UAT" — enough
+# to pass a postings > 0 check and land in the registry as a live company.
+# Seven reached the registry that way before a validation run caught them.
+MIN_POSTINGS = 3
+
 
 def resolve(company: dict, deep: bool) -> dict:
     """Find a scrapeable board for one company. Never raises."""
@@ -62,8 +69,10 @@ def resolve(company: dict, deep: bool) -> dict:
 def _reject_bad_hits(hits: list[dict]) -> tuple[list[dict], list[dict]]:
     """Drop the two failure modes slug-guessing produces.
 
-    1. Empty boards. A slug that resolves but serves 0 jobs is either stale or
-       was never that company's board; either way it can only add noise.
+    1. Empty and near-empty boards. A slug that resolves but serves 0 jobs is
+       either stale or was never that company's board. A board serving one or
+       two is usually an abandoned trial account (see MIN_POSTINGS); either
+       way it can only add noise.
     2. Slug collisions. "Apollo Hospitals" and "Apollo Diagnostics" both guess
        `apollo`, which on Greenhouse is Apollo GraphQL. When several distinct
        companies land on one board, at most one is right and we can't tell
@@ -82,8 +91,14 @@ def _reject_bad_hits(hits: list[dict]) -> tuple[list[dict], list[dict]]:
                 drop.append(r)
             continue
         r = group[0]
-        if r.get("postings", 0) == 0:
+        n = r.get("postings", 0)
+        if n == 0:
             r["status"] = "rejected: board resolved but serves 0 postings"
+            drop.append(r)
+        elif 0 < n < MIN_POSTINGS:          # -1 means "found via careers page,
+            r["status"] = (                 # count unknown" — not a judgement
+                f"rejected: only {n} posting(s), below the {MIN_POSTINGS} "
+                f"that distinguishes a real board from a trial account")
             drop.append(r)
         else:
             keep.append(r)
