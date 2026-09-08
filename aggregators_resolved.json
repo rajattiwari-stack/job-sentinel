@@ -1,0 +1,178 @@
+{
+  "generated_on": "2026-09-06",
+  "total": 19,
+  "description": "General job-aggregator platforms (Naukri, LinkedIn, Indeed, Glassdoor, Foundit, niche cybersecurity boards, etc.) that were individually investigated in an earlier session (31 Jul 2026 pass). 'verification' field: confirmed_working = checked and correct; broken_corrected = dead link found, a working replacement or note is in link_status_raw; redirects_noted = platform merged/rebranded, note explains where it now points; wrong_path_corrected = URL path was wrong, correct path noted.",
+  "platforms": [
+    {
+      "platform": "Internshala",
+      "category": "Fresher, Student & Internship Platforms",
+      "best_for": "Student internships & entry-level jobs — Best for: Student internships & entry-level jobs in India",
+      "url": "https://internshala.com",
+      "link_status_raw": "Checked — active and correct",
+      "source_files": "Top50_Hiring_Platforms.txt",
+      "verification": "confirmed_working"
+    },
+    {
+      "platform": "Glassdoor",
+      "category": "Global General Job Boards",
+      "best_for": "Jobs + company reviews + salary insights — Best for: Job seekers researching culture & pay before applying",
+      "url": "https://www.glassdoor.com",
+      "link_status_raw": "Checked — active and correct",
+      "source_files": "Top50_Hiring_Platforms.txt",
+      "verification": "confirmed_working"
+    },
+    {
+      "platform": "Indeed",
+      "category": "Global General Job Boards",
+      "best_for": "World's #1 job search engine & aggregator — Best for: Largest global job aggregator, all roles",
+      "url": "https://www.indeed.com",
+      "link_status_raw": "Checked — active and correct",
+      "source_files": "Top50_Hiring_Platforms.txt",
+      "verification": "confirmed_working"
+    },
+    {
+      "platform": "LinkedIn",
+      "category": "Global General Job Boards",
+      "best_for": "World's largest professional network — Best for: All industries, Networking, Professional growth",
+      "url": "https://www.linkedin.com",
+      "link_status_raw": "Checked — active and correct",
+      "source_files": "Top50_Hiring_Platforms.txt, Master_2026",
+      "verification": "confirmed_working"
+    },
+    {
+      "platform": "Monster",
+      "category": "Global General Job Boards",
+      "best_for": "Pioneer global job board with resume DB — Best for: Global jobs, resume database",
+      "url": "https://www.monster.com",
+      "link_status_raw": "Checked — active and correct",
+      "source_files": "Top50_Hiring_Platforms.txt",
+      "verification": "confirmed_working"
+    },
+    {
+      "platform": "ZipRecruiter",
+      "category": "Global General Job Boards",
+      "best_for": "AI-powered job matching platform — Best for: AI-driven job matching, US-focused",
+      "url": "https://www.ziprecruiter.com",
+      "link_status_raw": "Checked — active and correct",
+      "source_files": "Top50_Hiring_Platforms.txt",
+      "verification": "confirmed_working"
+    },
+    {
+      "platform": "Apna",
+      "category": "India-Specific Job Portals",
+      "best_for": "Blue-collar & frontline hiring platform — Best for: Blue-collar & frontline workers, SME hiring",
+      "url": "https://apna.co",
+      "link_status_raw": "Checked — active and correct",
+      "source_files": "Top50_Hiring_Platforms.txt",
+      "verification": "confirmed_working"
+    },
+    {
+      "platform": "Foundit (Monster)",
+      "category": "India-Specific Job Portals",
+      "best_for": "Tech, finance & management roles in India — Best for: Tech, finance, management roles in India",
+      "url": "https://www.foundit.in",
+      "link_status_raw": "Checked — active and correct",
+      "source_files": "Top50_Hiring_Platforms.txt",
+      "verification": "confirmed_working"
+    },
+    {
+      "platform": "Hirist",
+      "category": "India-Specific Job Portals",
+      "best_for": "Focused on software engineers in India — Best for: Software engineers & tech roles in India",
+      "url": "https://www.hirist.tech",
+      "link_status_raw": "Checked — active and correct",
+      "source_files": "Top50_Hiring_Platforms.txt, Master_2026",
+      "verification": "confirmed_working"
+    },
+    {
+      "platform": "Instahyre",
+      "category": "India-Specific Job Portals",
+      "best_for": "Premium AI-powered IT & tech hiring — Best for: Premium IT & tech hiring in India",
+      "url": "https://www.instahyre.com",
+      "link_status_raw": "Checked — active and correct",
+      "source_files": "Top50_Hiring_Platforms.txt, Master_2026",
+      "verification": "confirmed_working"
+    },
+    {
+      "platform": "Naukri",
+      "category": "India-Specific Job Portals",
+      "best_for": "India's #1 job portal — massive listing base — Best for: #1 job portal in India, all sectors",
+      "url": "https://www.naukri.com",
+      "link_status_raw": "Checked — active and correct",
+      "source_files": "Top50_Hiring_Platforms.txt, Master_2026",
+      "verification": "confirmed_working"
+    },
+    {
+      "platform": "Fiverr",
+      "category": "Remote & Freelance Platforms",
+      "best_for": "Gig-based freelance work platform — Best for: Gig-based freelance work",
+      "url": "https://www.fiverr.com",
+      "link_status_raw": "Checked — active and correct",
+      "source_files": "Top50_Hiring_Platforms.txt",
+      "verification": "confirmed_working"
+    },
+    {
+      "platform": "Toptal",
+      "category": "Remote & Freelance Platforms",
+      "best_for": "Elite freelance developers, designers, — Best for: Elite freelance developers, designers, finance",
+      "url": "https://www.toptal.com",
+      "link_status_raw": "Checked — active and correct",
+      "source_files": "Top50_Hiring_Platforms.txt",
+      "verification": "confirmed_working"
+    },
+    {
+      "platform": "Upwork",
+      "category": "Remote & Freelance Platforms",
+      "best_for": "Freelance projects across all domains — Best for: Freelance projects across all domains",
+      "url": "https://www.upwork.com",
+      "link_status_raw": "Checked — active and correct",
+      "source_files": "Top50_Hiring_Platforms.txt",
+      "verification": "confirmed_working"
+    },
+    {
+      "platform": "GitHub Jobs",
+      "category": "Tech & It Specialized Platforms",
+      "best_for": "Open-source & developer community roles — Best for: Open source & developer community roles",
+      "url": "https://github.com/about/careers",
+      "link_status_raw": "BROKEN — jobs.github.com was shut down in 2018. Replaced with GitHub’s current careers page.",
+      "source_files": "Top50_Hiring_Platforms.txt, Master_2026",
+      "verification": "broken_corrected"
+    },
+    {
+      "platform": "Stack Overflow Jobs",
+      "category": "Tech & It Specialized Platforms",
+      "best_for": "Developer & software engineering roles — Best for: Developer & software engineering roles",
+      "url": "https://stackoverflow.com/talent",
+      "link_status_raw": "BROKEN — Stack Overflow Jobs was discontinued 31 Mar 2022 and never relaunched. No direct replacement exists at Stack Overflow; use Wellfound or LinkedIn instead. Left as their site root so the row isn’t a dead link.",
+      "source_files": "Top50_Hiring_Platforms.txt, Master_2026",
+      "verification": "broken_corrected"
+    },
+    {
+      "platform": "Wellfound",
+      "category": "Tech & It Specialized Platforms",
+      "best_for": "Startup jobs — tech & product focused — Best for: Startup jobs, tech & product roles",
+      "url": "https://wellfound.com",
+      "link_status_raw": "Checked — active and correct",
+      "source_files": "Top50_Hiring_Platforms.txt, Master_2026",
+      "verification": "confirmed_working"
+    },
+    {
+      "platform": "Monster India",
+      "category": "Tier: GLOBAL JOB BOARDS (Highest volume, best filters)",
+      "best_for": null,
+      "url": "https://www.foundit.in",
+      "link_status_raw": "REDIRECT — Monster India rebranded to foundit in Nov 2022. This is the same company as \"Foundit (Monster)\" already listed above; monsterindia.com now forwards to foundit.in.",
+      "source_files": "Master_2026",
+      "verification": "redirects_noted"
+    },
+    {
+      "platform": "DRDO Recruitment",
+      "category": "Tier: GOVERNMENT & PSU RECRUITMENT PORTALS",
+      "best_for": null,
+      "url": "https://rac.gov.in",
+      "link_status_raw": "WRONG PATH — drdo.gov.in/jobs does not resolve. DRDO scientist recruitment is run through the Recruitment & Assessment Centre at rac.gov.in; general vacancies are at drdo.gov.in/drdo/en/offerings/vacancies.",
+      "source_files": "Master_2026",
+      "verification": "wrong_path_corrected"
+    }
+  ]
+}

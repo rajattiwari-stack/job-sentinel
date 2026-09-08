@@ -601,6 +601,10 @@ companies:
     ats: lever
     slug: "secureframe"
     priority: medium
+  - name: "Securiti.ai"
+    ats: smartrecruiters
+    slug: "securiti"
+    priority: medium
   - name: "Sentra"
     ats: ashby
     slug: "sentra"
@@ -725,6 +729,12 @@ companies:
     ats: lever
     slug: "twingate"
     priority: medium
+  - name: "Unisys"
+    ats: workday
+    slug: "unisys"
+    workday_host: unisys.wd5.myworkdayjobs.com
+    workday_path: External
+    priority: medium
   - name: "Upstox"
     ats: smartrecruiters
     slug: "upstox"
@@ -787,6 +797,12 @@ companies:
     workday_host: zayo.wd1.myworkdayjobs.com
     workday_path: Zayo_Careers
     priority: medium
+  - name: "Zendesk"
+    ats: workday
+    slug: "zendesk"
+    workday_host: zendesk.wd1.myworkdayjobs.com
+    workday_path: zendesk
+    priority: medium
 
   # ---- priority: low ----
   - name: "AbbVie"
@@ -828,6 +844,12 @@ companies:
   - name: "ClickUp"
     ats: ashby
     slug: "clickup"
+    priority: low
+  - name: "Comcast"
+    ats: workday
+    slug: "comcast"
+    workday_host: comcast.wd115.myworkdayjobs.com
+    workday_path: Comcast_Careers
     priority: low
   - name: "Delinea"
     ats: ashby
@@ -883,6 +905,10 @@ companies:
     ats: lever
     slug: "lyrahealth"
     priority: low
+  - name: "Namely HR"
+    ats: smartrecruiters
+    slug: "namely"
+    priority: low
   - name: "Neon Database"
     ats: lever
     slug: "neon"
@@ -902,6 +928,12 @@ companies:
   - name: "OPSWAT"
     ats: greenhouse
     slug: "opswat"
+    priority: low
+  - name: "Pfizer"
+    ats: workday
+    slug: "pfizer"
+    workday_host: pfizer.wd1.myworkdayjobs.com
+    workday_path: PfizerCareers
     priority: low
   - name: "PlanetScale"
     ats: greenhouse
@@ -985,6 +1017,12 @@ companies:
     ats: greenhouse
     slug: "airbnb"
     priority: unknown
+  - name: "Airbus India"
+    ats: workday
+    slug: "ag"
+    workday_host: ag.wd3.myworkdayjobs.com
+    workday_path: Airbus
+    priority: unknown
   - name: "Akamai"
     ats: workday
     slug: "akamai"
@@ -998,6 +1036,10 @@ companies:
   - name: "Amazon"
     ats: amazon
     slug: "amazon"
+    priority: unknown
+  - name: "American Express"
+    ats: smartrecruiters
+    slug: "americanexpressglobal"
     priority: unknown
   - name: "Anthropic (India-facing roles)"
     ats: greenhouse
@@ -1054,6 +1096,10 @@ companies:
   - name: "Chargebee"
     ats: greenhouse
     slug: "chargebee"
+    priority: unknown
+  - name: "Citrix (Cloud Software Group)"
+    ats: smartrecruiters
+    slug: "citrix1"
     priority: unknown
   - name: "Cloudflare"
     ats: greenhouse
@@ -1171,6 +1217,16 @@ companies:
     ats: greenhouse
     slug: "hashicorp"
     priority: unknown
+  - name: "Heidrick & Struggles India"
+    ats: workday
+    slug: "heidrick"
+    workday_host: heidrick.wd1.myworkdayjobs.com
+    workday_path: heidrickandstruggles
+    priority: unknown
+  - name: "Help Scout"
+    ats: ashby
+    slug: "helpscout"
+    priority: unknown
   - name: "Honeycomb.io"
     ats: greenhouse
     slug: "honeycomb"
@@ -1209,9 +1265,17 @@ companies:
     workday_host: kla.wd1.myworkdayjobs.com
     workday_path: Search
     priority: unknown
+  - name: "Knowlarity"
+    ats: smartrecruiters
+    slug: "knowlarity1"
+    priority: unknown
   - name: "Kong Inc"
     ats: ashby
     slug: "kong"
+    priority: unknown
+  - name: "Kudelski Security"
+    ats: smartrecruiters
+    slug: "kudelskisecurityinc"
     priority: unknown
   - name: "Labelbox"
     ats: greenhouse
@@ -1245,6 +1309,10 @@ companies:
   - name: "LogiNext Solutions"
     ats: smartrecruiters
     slug: "loginext"
+    priority: unknown
+  - name: "Mahindra & Mahindra"
+    ats: smartrecruiters
+    slug: "mahindra1"
     priority: unknown
   - name: "Media.net"
     ats: smartrecruiters
@@ -1361,6 +1429,12 @@ companies:
     ats: smartrecruiters
     slug: "rebelfoods"
     priority: unknown
+  - name: "Red Hat India"
+    ats: workday
+    slug: "redhat"
+    workday_host: redhat.wd5.myworkdayjobs.com
+    workday_path: jobs
+    priority: unknown
   - name: "Redis Labs"
     ats: ashby
     slug: "redis"
@@ -1425,6 +1499,10 @@ companies:
     ats: ashby
     slug: "snyk"
     priority: unknown
+  - name: "Sophos"
+    ats: lever
+    slug: "sophos"
+    priority: unknown
   - name: "Splunk (Cisco)"
     ats: workday
     slug: "splunk"
@@ -1438,6 +1516,10 @@ companies:
   - name: "Stability AI"
     ats: greenhouse
     slug: "stabilityai"
+    priority: unknown
+  - name: "StackHawk"
+    ats: lever
+    slug: "stackhawk"
     priority: unknown
   - name: "STAR India (Disney Star)"
     ats: workday
@@ -1514,6 +1596,10 @@ companies:
     slug: "broadcom"
     workday_host: broadcom.wd1.myworkdayjobs.com
     workday_path: External_Career
+    priority: unknown
+  - name: "Vulcan Cyber (Tenable)"
+    ats: smartrecruiters
+    slug: "vulcancyberinc"
     priority: unknown
   - name: "Vultr"
     ats: ashby
