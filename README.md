@@ -118,17 +118,33 @@ Then run `python scripts/validate_companies.py`. That's the whole change.
 links*, which is not something a scraper can use. `discover_ats.py` converts it:
 
 ```bash
+# 0. point each row at a URL that is actually live, and drop names the
+#    registry already covers. --deep reads `career_portal_url`, and in a
+#    list of failed lookups that field holds the URL that already 404'd —
+#    the one page guaranteed not to help.
+python scripts/prep_discovery_input.py --input my_companies.json \
+       --registry config/companies.yaml --out prepped.json
+
 # 1. resolve names -> real ATS boards (probes 4 JSON APIs, keeps only live hits)
-python scripts/discover_ats.py --input my_companies.json \
+python scripts/discover_ats.py --input prepped.json --deep \
        --out discovered.yaml --unresolved unresolved.csv
 
-# 2. merge into the registry WITHOUT clobbering hand-verified entries
-python scripts/merge_companies.py --curated config/companies.yaml \
-       --discovered discovered.yaml --out config/companies.yaml
+# 2. drop boards that belong to somebody else, BEFORE they reach the registry
+python scripts/identity_gate.py --in discovered.yaml --out gated.yaml
 
-# 3. confirm every board actually serves jobs
+# 3. merge into the registry WITHOUT clobbering hand-verified entries
+python scripts/merge_companies.py --curated config/companies.yaml \
+       --discovered gated.yaml --out config/companies.yaml
+
+# 4. confirm every board actually serves jobs
 python scripts/validate_companies.py --quiet
 ```
+
+Step 2 is separate from `validate_companies.py --identity` on purpose. That
+flag *reports* a mismatch and leaves the entry alone, which is right for a
+curated board — "Abnormal Security" legitimately renaming itself to
+"Abnormal" must not be auto-deleted. A slug the machine guessed thirty
+seconds ago has earned no such benefit of the doubt, so the gate drops it.
 
 Expect roughly **1 in 5 names to resolve**. That is not a bug: most companies
 aren't on a public-API ATS at all, and the rest publish only through LinkedIn
@@ -255,10 +271,16 @@ has never heard of, so nothing threw, nothing alerted, and the log read
 `0 postings` exactly like a company with no openings.
 
 After every scan, any company that hard-failed **or returned zero postings** is
-re-resolved: slug guesses across all four ATS APIs, then its careers page
-(the only route to a Workday board, whose host and path aren't derivable from
-a name). If a live board is found, `config/companies.yaml` is rewritten in
-place, the change is committed by the workflow, and you get a Telegram message:
+re-resolved: slug guesses across all four ATS APIs, and — for a company already
+on Workday — a direct probe of the board paths its host answers on. That last
+route matters because a Workday board is a *host plus a path* and it is nearly
+always the path that breaks: the tenant renames the board, the host keeps
+resolving, and the endpoint answers `422`, which reads like a malformed request
+rather than a wrong board. Slug guessing cannot reach Workday at all, so before
+this existed Akamai, Fortinet, Splunk and Trellix each spent their repair
+attempts on probes that could not have succeeded. If a live board is found,
+`config/companies.yaml` is rewritten in place, the change is committed by the
+workflow, and you get a Telegram message:
 
 ```
 🔧 Self-healing — board(s) repaired:
@@ -271,6 +293,11 @@ Deliberate limits:
   migrated one, and guessing wrong there would silently stop watching them.
 - At most 12 probes per run, so a systemic outage (network down, everything at
   zero) can't turn into hundreds of requests.
+- A company that fails to re-resolve three runs running is **set aside for a
+  week**, so the probe budget reaches boards that broke today instead of being
+  spent re-testing the permanently unresolvable. The set-aside is a pause, not
+  a verdict — it expires and the company is retried. (It was originally
+  permanent by omission, and 44 companies had accumulated in it.)
 - Every repair is announced. Silent self-modification would be a worse failure
   mode than the bug it fixes.
 - The edit is line-based and atomic, and preserves your comments and `priority`.

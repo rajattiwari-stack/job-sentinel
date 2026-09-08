@@ -223,8 +223,9 @@ def main() -> int:
 
     try:
         from .healer import (apply_fixes, diagnose, format_report, heal,
-                             record_attempts)
+                             record_attempts, reset_attempts_if_due)
         from .notifier import send_telegram_text
+        reset_attempts_if_due(meta.data)
         attempts = meta.data.setdefault("heal_attempts", {})
         suspects = diagnose(companies, postings_seen, failures, attempts)
         if suspects:

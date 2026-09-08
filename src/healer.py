@@ -15,9 +15,10 @@ HOW IT HEALS
 ------------
 After a scan, any company that hard-failed or returned zero postings is a
 suspect. The healer re-runs discovery for it — slug guesses across all four
-ATS APIs, then its careers page, which is the only route to a Workday board —
-and if it finds a live board it rewrites that entry in companies.yaml. The
-workflow commits the file, so the fix persists to the next run.
+ATS APIs, and for a Workday company a direct probe of the board paths its
+host answers on, which is the only route Workday leaves open — and if it
+finds a live board it rewrites that entry in companies.yaml. The workflow
+commits the file, so the fix persists to the next run.
 
 DELIBERATE LIMITS
 -----------------
@@ -35,7 +36,7 @@ import logging
 import re
 from pathlib import Path
 
-from .discovery import find_board
+from .discovery import find_board, find_workday_path
 from .models import Company
 
 log = logging.getLogger("healer")
@@ -90,12 +91,62 @@ def record_attempts(attempts: dict[str, int], probed: list[Company],
             attempts[c.name] = attempts.get(c.name, 0) + 1
 
 
+def reset_attempts_if_due(meta_data: dict) -> int:
+    """Clear the give-up counters once a week.
+
+    diagnose() sets a company aside after GIVE_UP_AFTER failed repairs so the
+    probe budget reaches fresh breakage, and its docstring says the counter is
+    cleared weekly. Nothing cleared it. "Set aside" was therefore permanent:
+    a board that was merely down for a day got frozen out for good, and the
+    roster quietly lost a company every time three probes in a row missed.
+    Forty-four had accumulated that way before this was noticed.
+
+    A week is long enough that the genuinely unresolvable aren't re-probed
+    every run, and short enough that a real ATS migration is picked up within
+    days rather than never.
+    """
+    from .digest import mark_sent, should_send
+
+    if not should_send(meta_data, "last_heal_reset", every_hours=24 * 7):
+        return 0
+    cleared = len(meta_data.get("heal_attempts") or {})
+    meta_data["heal_attempts"] = {}
+    mark_sent(meta_data, "last_heal_reset")
+    if cleared:
+        log.info("Heal budget reset: %d compan(ies) eligible for repair again.", cleared)
+    return cleared
+
+
+def _reprobe(company: Company) -> dict | None:
+    """Find a live board for a company whose current one went quiet.
+
+    For Workday, slug guessing cannot help: find_board() reaches a Workday
+    board only through a careers page, and heal() has no careers URL to give
+    it. Workday was therefore unreachable from here despite being the ATS this
+    module most needed to repair, and Akamai, Fortinet, Splunk and Trellix each
+    spent their three repair attempts on probes that could not have succeeded.
+
+    A Workday board is a host plus a path, and it is nearly always the path
+    that breaks — the tenant renames the board, the host keeps resolving, and
+    the CXS endpoint answers 422, which reads like a malformed request rather
+    than a wrong board. We already hold the hard half, so ask the host which
+    paths it answers on before falling back to guessing.
+    """
+    if company.ats == "workday" and company.workday_host:
+        path = find_workday_path(company.workday_host)
+        if path and path != (company.workday_path or ""):
+            return {"ats": "workday", "slug": company.slug,
+                    "workday_host": company.workday_host, "workday_path": path,
+                    "postings": -1, "how": "workday-path-probe"}
+    return find_board(company.name)
+
+
 def heal(suspects: list[Company]) -> list[dict]:
     """Re-resolve each suspect. Returns the fixes that were actually found."""
     fixes: list[dict] = []
     for c in suspects:
         try:
-            found = find_board(c.name)
+            found = _reprobe(c)
         except Exception as e:               # noqa: BLE001 — healing never breaks a run
             log.warning("%s: heal probe failed: %s", c.name, e)
             continue
@@ -180,7 +231,9 @@ def _write_atomic(path: Path, text: str) -> None:
 def format_report(fixes: list[dict]) -> str:
     lines = ["🔧 <b>Self-healing</b> — board(s) repaired:"]
     for f in fixes:
+        n = f.get("postings", -1)
+        count = f"{n} postings" if isinstance(n, int) and n >= 0 else "count unknown"
         lines.append(f"• <b>{f['name']}</b>: {f['old']} → {f['ats']}/{f.get('slug')} "
-                     f"({f.get('postings')} postings, via {f.get('how')})")
+                     f"({count}, via {f.get('how')})")
     lines.append("\nconfig/companies.yaml was updated and committed.")
     return "\n".join(lines)

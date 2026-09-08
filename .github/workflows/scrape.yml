@@ -56,8 +56,19 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           # companies.yaml is included because the self-healer rewrites entries
           # whose board migrated ATS. Without committing it the repair is
-          # recomputed from scratch every single run.
-          git add state/seen_jobs.json state/run_meta.json tracker.xlsx config/companies.yaml
+          # recomputed from scratch every single run. docs/index.html is the
+          # GitHub Pages dashboard, which was being regenerated every run and
+          # then discarded because nothing ever staged it.
+          #
+          # Staged one at a time on purpose: `git add a b c` with a missing
+          # path aborts and stages NOTHING, so a run killed by the timeout
+          # before it wrote run_meta.json would also lose the seen-jobs state
+          # and re-notify every job it had already sent.
+          for f in state/seen_jobs.json state/run_meta.json tracker.xlsx \
+                   config/companies.yaml docs/index.html
+          do
+            [ -e "$f" ] && git add "$f"
+          done
           if git diff --cached --quiet; then
             echo "No state changes."
           else

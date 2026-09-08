@@ -173,3 +173,71 @@ def test_attempts_accumulate_then_clear_on_success():
 def test_no_attempt_memory_behaves_as_before():
     c = Company(name="X", ats="greenhouse", slug="x")
     assert [x.name for x in diagnose([c], {"X": 0}, {})] == ["X"]
+
+
+def test_set_aside_companies_are_freed_again_after_a_week():
+    """The give-up counter is a pause, not a life sentence.
+
+    diagnose() documented a weekly clear that nothing implemented, so 44
+    companies had been frozen out of repair permanently — including boards
+    that were only briefly down.
+    """
+    from src.healer import GIVE_UP_AFTER, reset_attempts_if_due
+    from src.digest import mark_sent
+
+    stuck = Company(name="Stuck", ats="greenhouse", slug="stuck")
+    meta = {"heal_attempts": {"Stuck": GIVE_UP_AFTER}}
+
+    mark_sent(meta, "last_heal_reset")                     # reset just happened
+    assert reset_attempts_if_due(meta) == 0
+    assert diagnose([stuck], {"Stuck": 0}, {}, meta["heal_attempts"]) == []
+
+    meta["last_heal_reset"] = "2001-01-01T00:00:00"        # ... a long time ago
+    assert reset_attempts_if_due(meta) == 1
+    assert [c.name for c in diagnose([stuck], {"Stuck": 0}, {},
+                                     meta["heal_attempts"])] == ["Stuck"]
+
+
+def test_first_ever_run_clears_the_backlog():
+    from src.healer import reset_attempts_if_due
+    meta = {"heal_attempts": {"A": 3, "B": 3}}
+    assert reset_attempts_if_due(meta) == 2
+    assert meta["heal_attempts"] == {}
+    assert "last_heal_reset" in meta
+
+
+def test_workday_suspect_reprobes_its_own_host_not_a_slug_guess(monkeypatch):
+    """find_board() reaches Workday only via a careers page, and heal() has no
+    URL to give it — so a Workday board could never be repaired. The host is
+    the half we already hold; ask it which paths it answers on."""
+    import src.healer as healer
+
+    monkeypatch.setattr(healer, "find_board",
+                        lambda *a, **k: (_ for _ in ()).throw(AssertionError("guessed")))
+    monkeypatch.setattr(healer, "find_workday_path", lambda host, tenant="": "NewCareers")
+
+    c = Company(name="Fortinet", ats="workday", slug="fortinet",
+                workday_host="fortinet.wd1.myworkdayjobs.com", workday_path="Fortinet_Careers")
+    found = healer._reprobe(c)
+    assert found["workday_path"] == "NewCareers"
+    assert found["workday_host"] == c.workday_host
+    assert not _same_board(c, found)
+
+
+def test_workday_reprobe_falls_back_when_no_path_answers(monkeypatch):
+    import src.healer as healer
+    monkeypatch.setattr(healer, "find_workday_path", lambda host, tenant="": None)
+    monkeypatch.setattr(healer, "find_board",
+                        lambda name, **k: {"ats": "greenhouse", "slug": "moved", "postings": 4})
+
+    c = Company(name="X", ats="workday", slug="x",
+                workday_host="x.wd5.myworkdayjobs.com", workday_path="old")
+    assert healer._reprobe(c)["ats"] == "greenhouse"
+
+
+def test_unknown_posting_count_is_not_reported_as_minus_one():
+    from src.healer import format_report
+    msg = format_report([{"name": "Fortinet", "old": "workday/fortinet", "ats": "workday",
+                          "slug": "fortinet", "postings": -1, "how": "workday-path-probe"}])
+    assert "-1 postings" not in msg
+    assert "count unknown" in msg
