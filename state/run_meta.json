@@ -1,17 +1,17 @@
 {
 "heal_attempts": {
-"Akamai": 1,
-"Armis": 1,
-"Atlassian": 1,
-"Cars24": 1,
-"Chargebee": 1,
-"Fortinet": 1,
-"HashiCorp": 1,
-"Nutanix": 1,
-"PhonePe": 1,
-"Rippling": 1,
-"Splunk (Cisco)": 1,
-"Spring Health": 1
+"Akamai": 2,
+"Armis": 2,
+"Atlassian": 2,
+"Cars24": 2,
+"Chargebee": 2,
+"Fortinet": 2,
+"HashiCorp": 2,
+"Nutanix": 2,
+"PhonePe": 2,
+"Rippling": 2,
+"Splunk (Cisco)": 2,
+"Spring Health": 2
 },
 "last_heal_reset": "2026-09-08T21:38:11"
 }
