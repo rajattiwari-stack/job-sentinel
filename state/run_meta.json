@@ -1,8 +1,10 @@
 {
 "heal_attempts": {
+"Affle": 1,
 "Akamai": 3,
 "Armis": 3,
 "Atlassian": 3,
+"Browserstack": 1,
 "Cars24": 3,
 "Chargebee": 3,
 "Cyware": 3,
@@ -10,7 +12,14 @@
 "Fortinet": 3,
 "Glean": 3,
 "HashiCorp": 3,
+"Heidrick & Struggles India": 1,
 "HiBob": 3,
+"Hyatt Hotels India": 1,
+"Instahyre": 1,
+"Ixigo": 1,
+"Lendingkart": 1,
+"LogiNext Solutions": 1,
+"NS1 (IBM)": 1,
 "Narayana Health": 3,
 "NoBroker": 3,
 "Nutanix": 3,
@@ -23,7 +32,10 @@
 "Star Health Insurance": 3,
 "Thales": 3,
 "ThreatLocker": 3,
-"Turtlemint": 3
+"Turtlemint": 3,
+"Upstox": 1,
+"Wealthdesk": 1,
+"Whatfix": 1
 },
 "last_heal_reset": "2026-09-08T21:38:11"
 }
