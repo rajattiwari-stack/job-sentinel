@@ -1,10 +1,10 @@
 {
 "heal_attempts": {
-"Affle": 1,
+"Affle": 2,
 "Akamai": 3,
 "Armis": 3,
 "Atlassian": 3,
-"Browserstack": 1,
+"Browserstack": 2,
 "Cars24": 3,
 "Chargebee": 3,
 "Cyware": 3,
@@ -12,14 +12,14 @@
 "Fortinet": 3,
 "Glean": 3,
 "HashiCorp": 3,
-"Heidrick & Struggles India": 1,
+"Heidrick & Struggles India": 2,
 "HiBob": 3,
-"Hyatt Hotels India": 1,
-"Instahyre": 1,
-"Ixigo": 1,
-"Lendingkart": 1,
-"LogiNext Solutions": 1,
-"NS1 (IBM)": 1,
+"Hyatt Hotels India": 2,
+"Instahyre": 2,
+"Ixigo": 2,
+"Lendingkart": 2,
+"LogiNext Solutions": 2,
+"NS1 (IBM)": 2,
 "Narayana Health": 3,
 "NoBroker": 3,
 "Nutanix": 3,
@@ -33,9 +33,9 @@
 "Thales": 3,
 "ThreatLocker": 3,
 "Turtlemint": 3,
-"Upstox": 1,
-"Wealthdesk": 1,
-"Whatfix": 1
+"Upstox": 2,
+"Wealthdesk": 2,
+"Whatfix": 2
 },
 "last_heal_reset": "2026-09-08T21:38:11"
 }
