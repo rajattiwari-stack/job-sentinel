@@ -1,17 +1,29 @@
 {
 "heal_attempts": {
 "Akamai": 3,
+"Armis": 1,
 "Atlassian": 3,
+"Cars24": 1,
 "Chargebee": 3,
+"Cyware": 1,
+"Fidelis Cybersecurity": 1,
 "Fortinet": 3,
+"Glean": 1,
 "HashiCorp": 3,
+"HiBob": 1,
+"Leapsome": 1,
+"Narayana Health": 1,
+"NoBroker": 1,
 "Nutanix": 3,
 "PhonePe": 3,
 "Postman": 3,
 "Rippling": 3,
+"SISA Information Security": 1,
+"Sacumen": 1,
 "Snyk": 3,
 "Splunk (Cisco)": 3,
-"Spring Health": 3
+"Spring Health": 3,
+"Star Health Insurance": 1
 },
 "last_heal_reset": "2026-09-23T09:32:46"
 }
