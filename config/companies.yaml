@@ -44,9 +44,10 @@ companies:
     slug: "airtable"
     priority: medium
   - name: "Amplitude"
-    ats: greenhouse
-    slug: "amplitude"
+    ats: ashby
+    slug: amplitude
     priority: medium
+    # auto-healed: was greenhouse/amplitude
   - name: "Anaplan"
     ats: greenhouse
     slug: "anaplan"
