@@ -869,9 +869,10 @@ companies:
     slug: "godaddy"
     priority: low
   - name: "Hex Technologies"
-    ats: greenhouse
-    slug: "hextechnologies"
+    ats: ashby
+    slug: hex
     priority: low
+    # auto-healed: was greenhouse/hextechnologies
   - name: "Hinge Health"
     ats: ashby
     slug: "hinge-health"
