@@ -337,9 +337,10 @@ companies:
     slug: "hibob"
     priority: medium
   - name: "Hightouch"
-    ats: greenhouse
-    slug: "hightouch"
+    ats: ashby
+    slug: hightouch
     priority: medium
+    # auto-healed: was greenhouse/hightouch
   - name: "Horizon3.ai"
     ats: ashby
     slug: "horizon3ai"
