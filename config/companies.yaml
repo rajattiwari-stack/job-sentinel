@@ -553,8 +553,9 @@ companies:
     priority: medium
   - name: "Remote.com"
     ats: greenhouse
-    slug: "remotecom"
+    slug: remote
     priority: medium
+    # auto-healed: was greenhouse/remotecom
   - name: "Rockwell Automation"
     ats: workday
     slug: "rockwellautomation"
