@@ -302,10 +302,11 @@ companies:
     priority: medium
   - name: "Genesys"
     ats: workday
-    slug: "genesys"
+    slug: genesys
     workday_host: genesys.wd1.myworkdayjobs.com
-    workday_path: Genesys
+    workday_path: genesys
     priority: medium
+    # auto-healed: was workday/genesys
   - name: "Genpact"
     ats: workday
     slug: "genpact"
