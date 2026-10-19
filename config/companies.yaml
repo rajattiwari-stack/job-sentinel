@@ -793,10 +793,11 @@ companies:
     priority: medium
   - name: "Zayo Group"
     ats: workday
-    slug: "zayo"
+    slug: zayo
     workday_host: zayo.wd1.myworkdayjobs.com
-    workday_path: Zayo_Careers
+    workday_path: zayo_careers
     priority: medium
+    # auto-healed: was workday/zayo
   - name: "Zendesk"
     ats: workday
     slug: "zendesk"
