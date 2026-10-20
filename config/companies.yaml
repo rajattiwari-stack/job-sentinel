@@ -1186,9 +1186,10 @@ companies:
     workday_path: Careers
     priority: unknown
   - name: "Freshworks"
-    ats: smartrecruiters
-    slug: "Freshworks"
+    ats: lever
+    slug: freshworks
     priority: unknown
+    # auto-healed: was smartrecruiters/Freshworks
   - name: "Front"
     ats: ashby
     slug: "frontcareers"
