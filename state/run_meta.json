@@ -15,15 +15,27 @@
 "HiBob": 3,
 "Immunefi": 3,
 "Leapsome": 3,
+"Lendingkart": 1,
+"NS1 (IBM)": 1,
 "Narayana Health": 3,
 "NoBroker": 3,
 "Nutanix": 3,
 "PhonePe": 3,
 "Postman": 3,
 "Rippling": 3,
+"SISA Information Security": 1,
+"Sacumen": 1,
 "Splunk (Cisco)": 3,
 "Spring Health": 3,
-"ThreatLocker": 3
+"Star Health Insurance": 1,
+"Swiggy": 1,
+"Thales": 1,
+"ThreatLocker": 3,
+"Turtlemint": 1,
+"Upstox": 1,
+"Wealthdesk": 1,
+"Whatfix": 1,
+"runZero": 1
 },
 "last_heal_reset": "2026-10-28T15:25:42"
 }
