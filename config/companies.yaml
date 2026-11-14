@@ -1485,9 +1485,10 @@ companies:
     slug: "snyk"
     priority: unknown
   - name: "Sophos"
-    ats: lever
-    slug: "sophos"
+    ats: ashby
+    slug: sophos
     priority: unknown
+    # auto-healed: was lever/sophos
   - name: "Splunk (Cisco)"
     ats: workday
     slug: "splunk"
