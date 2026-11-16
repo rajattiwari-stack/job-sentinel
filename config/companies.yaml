@@ -775,10 +775,11 @@ companies:
     priority: medium
   - name: "Workiva"
     ats: workday
-    slug: "workiva"
+    slug: workiva
     workday_host: workiva.wd503.myworkdayjobs.com
-    workday_path: careers
+    workday_path: Careers
     priority: medium
+    # auto-healed: was workday/workiva
   - name: "WorkOS"
     ats: ashby
     slug: "workos"
