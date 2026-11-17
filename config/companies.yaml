@@ -1542,10 +1542,11 @@ companies:
     priority: unknown
   - name: "Trend Micro"
     ats: workday
-    slug: "trendmicro"
+    slug: trendmicro
     workday_host: trendmicro.wd3.myworkdayjobs.com
-    workday_path: External
+    workday_path: external
     priority: unknown
+    # auto-healed: was workday/trendmicro
   - name: "Trivago India"
     ats: greenhouse
     slug: "trivago"
