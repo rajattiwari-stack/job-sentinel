@@ -1042,10 +1042,11 @@ companies:
     priority: unknown
   - name: "Arctic Wolf"
     ats: workday
-    slug: "arcticwolf"
+    slug: arcticwolf
     workday_host: arcticwolf.wd1.myworkdayjobs.com
-    workday_path: External
+    workday_path: external
     priority: unknown
+    # auto-healed: was workday/arcticwolf
   - name: "AssemblyAI"
     ats: greenhouse
     slug: "assemblyai"
