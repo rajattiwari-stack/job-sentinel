@@ -1311,10 +1311,11 @@ companies:
     priority: unknown
   - name: "Micron Technology India"
     ats: workday
-    slug: "micron"
+    slug: micron
     workday_host: micron.wd1.myworkdayjobs.com
-    workday_path: External
+    workday_path: external
     priority: unknown
+    # auto-healed: was workday/micron
   - name: "Microsoft"
     ats: microsoft
     slug: "microsoft"
@@ -1448,10 +1449,11 @@ companies:
     priority: unknown
   - name: "S&P Global India"
     ats: workday
-    slug: "spgi"
+    slug: spgi
     workday_host: spgi.wd5.myworkdayjobs.com
-    workday_path: SPGI_Careers
+    workday_path: spgi_careers
     priority: unknown
+    # auto-healed: was workday/spgi
   - name: "Salesforce"
     ats: workday
     slug: "salesforce"
