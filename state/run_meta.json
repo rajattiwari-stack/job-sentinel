@@ -1,19 +1,19 @@
 {
 "heal_attempts": {
-"Akamai": 1,
-"Atlassian": 2,
-"Chargebee": 2,
-"Cybereason": 2,
+"Akamai": 2,
+"Atlassian": 3,
+"Chargebee": 3,
+"Cybereason": 3,
 "Fortinet": 1,
-"HashiCorp": 2,
-"Immunefi": 2,
-"Leapsome": 2,
-"Nutanix": 2,
-"PhonePe": 2,
-"Postman": 1,
+"HashiCorp": 3,
+"Immunefi": 3,
+"Leapsome": 3,
+"Nutanix": 3,
+"PhonePe": 3,
+"Postman": 2,
 "Rippling": 1,
-"Spring Health": 2,
-"ThreatLocker": 2
+"Spring Health": 3,
+"ThreatLocker": 3
 },
 "last_heal_reset": "2026-11-18T20:55:42"
 }
