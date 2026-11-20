@@ -16,7 +16,7 @@
 "Forcepoint": 3,
 "Fortinet": 2,
 "Genesys": 3,
-"Genpact": 1,
+"Genpact": 2,
 "Glean": 3,
 "HashiCorp": 3,
 "HiBob": 3,
@@ -34,13 +34,20 @@
 "PhonePe": 3,
 "Postman": 3,
 "Rippling": 3,
-"Rockwell Automation": 2,
-"Sacumen": 2,
-"SailPoint": 1,
+"Rockwell Automation": 3,
+"SISA Information Security": 1,
+"Sacumen": 3,
+"SailPoint": 2,
 "Splunk (Cisco)": 2,
 "Spring Health": 3,
+"Star Health Insurance": 1,
+"State Street": 1,
+"Temenos": 1,
+"Thales": 1,
 "ThreatLocker": 3,
-"runZero": 2
+"Turtlemint": 1,
+"Unisys": 1,
+"runZero": 3
 },
 "last_heal_reset": "2026-11-18T20:55:42"
 }
