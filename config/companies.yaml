@@ -892,10 +892,11 @@ companies:
     priority: low
   - name: "Johnson & Johnson"
     ats: workday
-    slug: "jj"
+    slug: jj
     workday_host: jj.wd5.myworkdayjobs.com
-    workday_path: JJ
+    workday_path: Jj
     priority: low
+    # auto-healed: was workday/jj
   - name: "Lendingkart"
     ats: smartrecruiters
     slug: "lendingkart"
