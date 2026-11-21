@@ -1072,10 +1072,11 @@ companies:
     priority: unknown
   - name: "Browserstack"
     ats: workday
-    slug: "browserstack"
+    slug: browserstack
     workday_host: browserstack.wd3.myworkdayjobs.com
-    workday_path: External
+    workday_path: external
     priority: unknown
+    # auto-healed: was workday/browserstack
   - name: "Buildkite"
     ats: greenhouse
     slug: "buildkite"
