@@ -1537,9 +1537,10 @@ companies:
     slug: "tenableinc"
     priority: unknown
   - name: "ThoughtWorks"
-    ats: greenhouse
-    slug: "thoughtworks"
+    ats: ashby
+    slug: thoughtworks
     priority: unknown
+    # auto-healed: was greenhouse/thoughtworks
   - name: "Trellix"
     ats: workday
     slug: "trellix"
