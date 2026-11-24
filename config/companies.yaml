@@ -1397,10 +1397,11 @@ companies:
     priority: unknown
   - name: "Qualys"
     ats: workday
-    slug: "qualys"
+    slug: qualys
     workday_host: qualys.wd5.myworkdayjobs.com
-    workday_path: Careers
+    workday_path: careers
     priority: unknown
+    # auto-healed: was workday/qualys
   - name: "Ramp"
     ats: ashby
     slug: "ramp"
