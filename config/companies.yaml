@@ -1552,7 +1552,7 @@ companies:
     ats: workday
     slug: trendmicro
     workday_host: trendmicro.wd3.myworkdayjobs.com
-    workday_path: external
+    workday_path: External
     priority: unknown
     # auto-healed: was workday/trendmicro
   - name: "Trivago India"
