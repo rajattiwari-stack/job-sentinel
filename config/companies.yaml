@@ -602,9 +602,10 @@ companies:
     slug: "scality"
     priority: medium
   - name: "Secureframe"
-    ats: lever
-    slug: "secureframe"
+    ats: ashby
+    slug: secureframe
     priority: medium
+    # auto-healed: was lever/secureframe
   - name: "Sentra"
     ats: ashby
     slug: "sentra"
