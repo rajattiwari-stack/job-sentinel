@@ -31,10 +31,11 @@ companies:
   # ---- priority: medium ----
   - name: "Accenture"
     ats: workday
-    slug: "accenture"
+    slug: accenture
     workday_host: accenture.wd103.myworkdayjobs.com
-    workday_path: AccentureCareers
+    workday_path: accenturecareers
     priority: medium
+    # auto-healed: was workday/accenture
   - name: "Airbyte"
     ats: ashby
     slug: "airbyte"
